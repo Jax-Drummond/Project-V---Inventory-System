@@ -1,5 +1,10 @@
 import express from "express"
 import volleyball from "volleyball"
+import db from "./src/config/db.js"
+
+// Route Imports
+import productRoutes from "./src/routes/productRoutes.js"
+
 
 const app = express()
 const PORT = 7198
@@ -58,6 +63,9 @@ backend/
 
 */
 
+// Mount Routes
+app.use("/api/products", productRoutes)
+
 app.get('/', (req, res) =>
 {
     res.send("Hello World!!")
@@ -67,6 +75,6 @@ app.get('/', (req, res) =>
 app.listen(PORT, "0.0.0.0", () =>
 {
     console.log(`Server is now running on port ${PORT}`)
-    // Connect to DB here
+    db.connect()
 });
 
