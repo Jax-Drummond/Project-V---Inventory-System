@@ -2,7 +2,7 @@
 
 
 ## 🚀 Features
-- REST API for managing:
+- REST API for managing and/or accessing:
   - Products
   - Stock
   - Equipment
@@ -19,7 +19,12 @@
 ## 📂 File Structure (Eventually)
 
 ```bash
-inventory-system-backend/
+inventory-system/
+├── /public
+│   ├── /images            # For any images used
+│   ├── /scripts           # For javascripts
+│   ├── /styles            # Css styles for pages
+│   ├── index.html         # Root page '/'
 ├── server.js              # Entry point
 ├── package.json
 ├── /src
