@@ -1,5 +1,5 @@
 import Product from "../models/productModel.js"
-import {json, Op} from "sequelize"
+import {Op} from "sequelize"
 
 class ProductController
 {
