@@ -1,13 +1,14 @@
 import { DataTypes } from "sequelize"
 import db from "../config/db.js"
+import ProductModel from "./productModel.js";
 
-class ProductModel 
+class EquipmentModel
 {
     constructor()
     {
-        this.model = db.getInstance().define("Product",
+        this.model = db.getInstance().define("Equipment",
             {
-                id: 
+                id:
                 {
                     primaryKey: true,
                     type: DataTypes.INTEGER,
@@ -15,21 +16,25 @@ class ProductModel
                     autoIncrement: true,
                     unique: true
                 },
-                name:
+                qty:
                 {
-                    type: DataTypes.STRING,
+                    type: DataTypes.INTEGER,
                     allowNull: false,
                     unique: false
                 },
-                description:
+                status:
                 {
                     type: DataTypes.STRING
                 },
-                price:
+                productId:
                 {
-                    type: DataTypes.FLOAT,
+                    type: DataTypes.INTEGER,
                     allowNull: false,
-                    validate: {min: 0}
+                    references:
+                    {
+                        model: ProductModel,
+                        key: "id",
+                    }
                 }
 
             }
@@ -42,4 +47,9 @@ class ProductModel
     }
 }
 
-export default new ProductModel().getModel();
+const equipmentModel = new EquipmentModel().getModel()
+
+equipmentModel.belongsTo(ProductModel, {foreignKey: "productId"})
+ProductModel.hasMany(equipmentModel, {foreignKey: "productId"})
+
+export default equipmentModel;
