@@ -1,13 +1,13 @@
 import { DataTypes } from "sequelize"
 import db from "../config/db.js"
 
-class ProductModel 
+class ProductModel
 {
     constructor()
     {
         this.model = db.getInstance().define("Product",
             {
-                id: 
+                id:
                 {
                     primaryKey: true,
                     type: DataTypes.INTEGER,
