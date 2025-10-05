@@ -1,5 +1,6 @@
 import ProductModel from "../models/productModel.js";
 import EquipmentModel from "../models/equipmentModel.js";
+import {Op} from "sequelize"
 
 class EquipmentController
 {
