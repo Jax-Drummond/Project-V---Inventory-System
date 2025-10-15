@@ -3,7 +3,7 @@ name: Run Jest Tests
 on:
   push:
     branches: [main, inventory-backend]
-  pull_requests:
+  pull_request:
     branches: [main, inventory-backend]
 
 jobs:
