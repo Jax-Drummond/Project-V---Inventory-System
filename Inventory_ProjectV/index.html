@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Inventory Management</h1>
+    <nav>
+      <button onclick="loadData('products')">Products</button>
+      <button onclick="loadData('stock')">Stock</button>
+      <button onclick="loadData('equipment')">Equipment</button>
+      <button onclick="loadData('orders')">Orders</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="controls">
+      <input type="text" id="search-input" placeholder="Search by name..." />
+      <button onclick="sortData('asc')">Sort A–Z</button>
+      <button onclick="sortData('desc')">Sort Z–A</button>
+    </section>
+
+    <section id="table-section">
+      <table id="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Edit Table -->
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Edit Product</h2>
+      <form id="edit-form">
+        <input type="hidden" id="edit-id" />
+        <label>Name: <input type="text" id="edit-name" /></label>
+        <label>Price: <input type="number" id="edit-price" step="0.01" /></label>
+        <label>Quantity: <input type="number" id="edit-quantity" /></label>
+        <label>Status: <input type="text" id="edit-status" /></label>
+        <button type="submit">Save</button>
+        <button type="button" onclick="closeModal()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="apt.js"></script>
+</body>
+</html>
