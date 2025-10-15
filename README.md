@@ -43,7 +43,7 @@ Clone the repo and install dependencies:
 
 ```bash
 git clone https://github.com/Jax-Drummond/Project-V---Inventory-System
-cd .\Project-V---Inventory-System\Backend\
+cd .\Project-V---Inventory-System\
 npm install
 ```
 

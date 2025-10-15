@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, "public")))
 app.use("/api/products", productRoutes)
 app.use("/api/equipment", equipmentRoutes)
 
-app.get('/', (req, res) =>
+app.get('/test', (req, res) =>
 {
     res.send("Hello World!!")
 })

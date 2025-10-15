@@ -1,5 +1,6 @@
 import ProductModel from "../models/productModel.js";
 import EquipmentModel from "../models/equipmentModel.js";
+import {Op} from "sequelize"
 
 class EquipmentController
 {
@@ -55,7 +56,7 @@ class EquipmentController
                 {
                     return res.status(400).json({message: "Name query is required"})
                 }
-    
+
                 const equipment = await EquipmentModel.findAll(
                 {
                     include:
@@ -72,7 +73,7 @@ class EquipmentController
                         }
                     ]
                 })
-    
+
                 res.status(200).json(equipment);
             }
             catch(e)

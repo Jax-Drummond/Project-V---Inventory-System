@@ -34,7 +34,7 @@ class ProductController
         }
     }
 
-    static async getProductByPartialName(req, res)
+    static async getProductByPartialName(req, res) // Example localhost:7893/api/products?name=tim
     {
         try
         {
@@ -48,7 +48,7 @@ class ProductController
                 {
                     where:
                     {
-                        name: 
+                        name:
                         {
                             [Op.like]: `%${name}%`
                         }
