@@ -57,7 +57,7 @@ describe("Product API Routes", () => {
   });
 
   test("GET /api/products/:id should return a product by ID", async () => {
-    const mockProduct = { id: 1, name: "Widget", description: "This is a widget", price: 425.69 };
+    const mockProduct = { id: 2, name: "Widget", description: "This is a widget", price: 425.69 };
     Product.findByPk.mockResolvedValue(mockProduct);
 
     const res = await request(app).get("/api/products/1");
