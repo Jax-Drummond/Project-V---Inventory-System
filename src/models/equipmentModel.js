@@ -47,9 +47,6 @@ class EquipmentModel
     }
 }
 
-const equipmentModel = new EquipmentModel().getModel()
 
-equipmentModel.belongsTo(ProductModel, {foreignKey: "productId"})
-ProductModel.hasMany(equipmentModel, {foreignKey: "productId"})
 
-export default equipmentModel;
+export default new EquipmentModel().getModel();
