@@ -45,7 +45,7 @@ describe("Product API Routes", () => {
     const mockProducts = [{ id: 1, name: "Makers Wand", description: "The masters wand", price: 3215.69 }];
     Product.findAll.mockResolvedValue(mockProducts);
 
-    const res = await request(app).get("/api/products/search?name=Lar");
+    const res = await request(app).get("/api/products/search?name=Make");
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual(mockProducts);
