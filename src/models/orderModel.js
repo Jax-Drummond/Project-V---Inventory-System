@@ -1,12 +1,12 @@
 import { DataTypes } from "sequelize"
 import db from "../config/db.js"
-import ProductModel from "./productModel.js";
+import StockModel from "./stockModel.js";
 
-class EquipmentModel
+class OrderModel
 {
     constructor()
     {
-        this.model = db.getInstance().define("Equipment",
+        this.model = db.getInstance().define("Order",
             {
                 id:
                 {
@@ -20,19 +20,30 @@ class EquipmentModel
                 {
                     type: DataTypes.INTEGER,
                     allowNull: false,
-                    unique: false
+                    validate: {min: 0}
+                },
+                date:
+                {
+                    type: DataTypes.date,
+                    allowNull: false
+                },
+                cost:
+                {
+                    type: DataTypes.FLOAT,
+                    allowNull: false,
                 },
                 status:
                 {
-                    type: DataTypes.STRING
+                    type: DataTypes.STRING,
+                    allowNull: false,
                 },
-                productId:
+                stockId: 
                 {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                     references:
                     {
-                        model: ProductModel,
+                        model: StockModel,
                         key: "id",
                     }
                 }
@@ -47,6 +58,4 @@ class EquipmentModel
     }
 }
 
-
-
-export default new EquipmentModel().getModel();
+export default new OrderModel().getModel();

@@ -2,11 +2,11 @@ import { DataTypes } from "sequelize"
 import db from "../config/db.js"
 import ProductModel from "./productModel.js";
 
-class EquipmentModel
+class StockModel
 {
     constructor()
     {
-        this.model = db.getInstance().define("Equipment",
+        this.model = db.getInstance().define("Stock",
             {
                 id:
                 {
@@ -20,13 +20,18 @@ class EquipmentModel
                 {
                     type: DataTypes.INTEGER,
                     allowNull: false,
-                    unique: false
+                    validate: {min: 0}
                 },
-                status:
+                threshold:
                 {
-                    type: DataTypes.STRING
+                    type: DataTypes.INTEGER
                 },
-                productId:
+                price:
+                {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                },
+                productId: 
                 {
                     type: DataTypes.INTEGER,
                     allowNull: false,
@@ -47,6 +52,4 @@ class EquipmentModel
     }
 }
 
-
-
-export default new EquipmentModel().getModel();
+export default new StockModel().getModel();

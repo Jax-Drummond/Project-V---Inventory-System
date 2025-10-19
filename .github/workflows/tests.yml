@@ -1,0 +1,32 @@
+name: Run Jest Tests
+
+on:
+  push:
+    branches: [main, inventory-backend]
+  pull_request:
+    branches: [main, inventory-backend]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+
+    strategy:
+      matrix:
+        node-version: [18,20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{matrix.node-version}}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{matrix.node-version}}
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
