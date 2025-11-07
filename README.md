@@ -1,41 +1,52 @@
-# Inventory System Backend
+# 🧭 Inventory System Backend
 
+A modular **Node.js + Express** backend providing RESTful APIs for managing inventory data including products, stock, equipment, and orders.
+
+---
 
 ## 🚀 Features
-- REST API for managing and/or accessing:
-  - Products
-  - Stock
-  - Equipment
-  - Orders
-- JSON request/response support
-- Modular file structure (routes, controllers, models)
-- Ready for database integration
+
+* REST API for managing:
+
+  * 🛒 Products
+  * 📦 Stock
+  * ⚙️ Equipment
+  * 📑 Orders
+* JSON request/response format
+* Modular structure with clear separation of routes, controllers, and models
+* Database-ready configuration setup
+
+---
 
 ## 📦 Requirements
-- [Node.js](https://nodejs.org/en/download) (>= 18)
-- npm (comes with Node)
 
+* [Node.js](https://nodejs.org/en/download) **>= 18**
+* npm (comes with Node)
 
-## 📂 File Structure (Eventually)
+---
+
+## 📂 File Structure
 
 ```bash
 inventory-system/
 ├── /public
-│   ├── /images            # For any images used
-│   ├── /scripts           # For javascripts
-│   ├── /styles            # Css styles for pages
-│   ├── index.html         # Root page '/'
-├── server.js              # Entry point
-├── package.json
+│   ├── /images            # Image assets
+│   ├── /scripts           # Client-side JS
+│   ├── /styles            # CSS stylesheets
+│   ├── index.html         # Root page
 ├── /src
-│   ├── /config            # DB config, env setup
+│   ├── /config            # DB config, environment setup
 │   ├── /controllers       # Request handlers
-│   ├── /models            # Data models
+│   ├── /models            # Data models (schemas)
 │   ├── /routes            # API route definitions
 │   ├── /middleware        # Express middleware
-│   └── /utils             # Helpers
-└── /tests                 # Unit/integration tests
+│   └── /utils             # Helper functions
+├── /tests                 # Unit/integration tests
+├── server.js              # Entry point
+└── package.json
 ```
+
+---
 
 ## ⚙️ Installation
 
@@ -43,14 +54,90 @@ Clone the repo and install dependencies:
 
 ```bash
 git clone https://github.com/Jax-Drummond/Project-V---Inventory-System
-cd .\Project-V---Inventory-System\
+cd Project-V---Inventory-System
 npm install
 ```
 
-## ▶️ Running The Server
-### Dev Mode
-`npm run dev`
+---
+
+## ▶️ Running the Server
+
+### Development Mode
+
+```bash
+npm run dev
+```
+
 ### Production Mode
-`npm start`
+
+```bash
+npm start
+```
+
 ### Testing
-`npm test`
+
+```bash
+npm test
+```
+
+---
+
+## 🧩 API Endpoints
+
+### 📦 Products (`/api/products`)
+
+| Method | Endpoint                 | Description                     |
+| ------ | ------------------------ | ------------------------------- |
+| `GET`  | `/`                      | Get all products                |
+| `GET`  | `/search?name=<partial>` | Search products by partial name |
+| `GET`  | `/:id`                   | Get a product by ID             |
+
+---
+
+### ⚙️ Equipment (`/api/equipment`)
+
+| Method | Endpoint                 | Description                      |
+| ------ | ------------------------ | -------------------------------- |
+| `GET`  | `/`                      | Get all equipment                |
+| `GET`  | `/search?name=<partial>` | Search equipment by partial name |
+| `GET`  | `/:id`                   | Get equipment by ID              |
+
+---
+
+### 🏗️ Stock (`/api/stock`)
+
+| Method   | Endpoint | Description                               |
+| -------- | -------- | ----------------------------------------- |
+| `GET`    | `/`      | Get all stock records                     |
+| `GET`    | `/:id`   | Get stock by ID                           |
+| `POST`   | `/`      | Create new stock entry                    |
+| `PUT`    | `/:id`   | Update stock (quantity, threshold, price) |
+| `DELETE` | `/:id`   | Delete stock record                       |
+
+---
+
+### 🧾 Orders (`/api/orders`)
+
+| Method   | Endpoint      | Description         |
+| -------- | ------------- | ------------------- |
+| `GET`    | `/`           | Get all orders      |
+| `GET`    | `/:id`        | Get order by ID     |
+| `POST`   | `/`           | Create a new order  |
+| `PUT`    | `/:id/status` | Update order status |
+| `DELETE` | `/:id`        | Delete order        |
+
+---
+
+## 📫 Example Requests
+
+**Get all products**
+
+```bash
+GET /api/products
+```
+
+**Search for a product**
+
+```bash
+GET /api/products/search?name=vacuum
+```
