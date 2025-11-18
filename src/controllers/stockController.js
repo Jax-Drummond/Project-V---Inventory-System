@@ -1,122 +1,86 @@
-import ProductModel from "../models/productModel.js";
-import StockModel from "../models/stockModel.js";
-import {Op} from "sequelize"
+import InventoryService from "../services/inventoryService.js";
 
-class StockController
-{
-    static async getAllStock(req, res)
-    {
-        try
-        {
-            const stock = await StockModel.findAll(
-                {
-                    include:
-                    {
-                        model: ProductModel
-                    }
-                }
-            )
-            res.status(200).json(stock)
-        } catch (e)
-        {
-            res.status(500).json({error: e.message})
+class StockController {
+    static async getAllStock(req, res) {
+        try {
+            const stock = await InventoryService.getAllStock();
+            res.status(200).json(stock);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
         }
     }
 
-    static async getStockByID(req, res)
-        {
-            try
-            {
-                const stock = await StockModel.findByPk(req.params.id,
-                {
-                    include:
-                    {
-                        model: ProductModel
-                    }
-                }
-                )
-                if (!stock)
-                {
-                    return res.status(404).json({message: "Item not found."})
-                }
-                res.status(200).json(stock)
+    static async getStockByID(req, res) {
+        try {
+            const stock = await InventoryService.getStockById(req.params.id);
+            if (!stock) {
+                return res.status(404).json({ message: "Item not found." });
             }
-            catch(e)
-            {
-                res.status(500).json({error: e.message})
-            }
+            res.status(200).json(stock);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
         }
+    }
 
-        static async createStock(req, res) {
-            try {
-                const {qty, threshold, price, productId} = req.body;
+    static async createStock(req, res) {
+        try {
+            const { qty, threshold, price, productId } = req.body;
 
-                if (!qty || !productId) {
-                    return res.status(400).json ({ message: "Missing Fields"})
-                }
-
-                const product = await ProductModel.findByPk(productId);
-                if (!product) {
-                    return res.status(404).json({ message: "Product not found."});
-                }
-
-                const newStock = await StockModel.create({
-                    qty,
-                    threshold: threshold || 0,
-                    price: price || 0,
-                    productId
-                });
-
-                res.status(500).json ({
-                    message: "Stock Created",
-                    stock: newStock
-                });
-            } catch (e) {
-                res.status(500).json({error: e.message});
+            if (!qty || !productId) {
+                return res.status(400).json({ message: "Missing Fields" });
             }
-        }
 
-        static async updateStock(req, res) {
-            try {
-                const {id} = req.params;
-                const {qty, threshold, price} = req.body;
-
-                const stock = await StockModel.findByPk(id);
-                if (!stock) {
-                    return res.status(404).json({message: "Stock not found."});
-                }
-
-                if (qty !== undefined) stock.qty = qty;
-                if (threshold !== undefined) stock.threshold = threshold;
-                if (price !== undefined) stock.price = price;
-
-                await stock.save();
-
-                res.status(200).json ({
-                    message: "Stock updated",
-                    stock
-                });
-            } catch (e) {
-                res.status(500).json({error: e.message});
+            // Verify product exists via service
+            const product = await InventoryService.getProductById(productId);
+            if (!product) {
+                return res.status(404).json({ message: "Product not found." });
             }
+
+            const newStock = await InventoryService.createStock({ qty, threshold, price, productId });
+
+            res.status(201).json({
+                message: "Stock Created",
+                stock: newStock
+            });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
         }
+    }
 
-        static async deleteStock(req, res) {
-            try {
-                const {id} = req.params;
-                const stock = await StockModel.findByPk(id);
+    static async updateStock(req, res) {
+        try {
+            const { id } = req.params;
+            const { qty, threshold, price } = req.body;
 
-                if (!stock) {
-                    return res.status(404).json({message: "Stock not found"});
-                }
+            const updatedStock = await InventoryService.updateStock(id, { qty, threshold, price });
 
-                await stock.destroy();
-                res.status(200).json({message: "Stock deleted"});
-            } catch (e) {
-                res.status(500).json({error: e.message});
+            if (!updatedStock) {
+                return res.status(404).json({ message: "Stock not found." });
             }
+
+            res.status(200).json({
+                message: "Stock updated",
+                stock: updatedStock
+            });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
         }
-        
+    }
+
+    static async deleteStock(req, res) {
+        try {
+            const { id } = req.params;
+            const success = await InventoryService.deleteStock(id);
+
+            if (!success) {
+                return res.status(404).json({ message: "Stock not found" });
+            }
+
+            res.status(200).json({ message: "Stock deleted" });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
 }
 
-export default StockController
+export default StockController;
