@@ -11,7 +11,7 @@ router.get("/:id", OrderController.getOrderByID);
 router.post("/", OrderController.createOrder);
 
 // UPDATE (status only)
-router.put("/:id/status", OrderController.updateOrderStatus);
+router.put("/:id", OrderController.updateOrderStatus);
 
 // DELETE
 router.delete("/:id", OrderController.deleteOrder);

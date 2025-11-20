@@ -207,6 +207,7 @@ class InventoryApp {
                     if (col.type === 'status') {
                         const color = String(val).toLowerCase().includes('available') ? 'bg-green-900 text-green-300'
                                     : String(val).toLowerCase().includes('stock') ? 'bg-yellow-900 text-yellow-300'
+                                    : String(val).toLowerCase().includes('received') ? 'bg-green-900 text-green-300'
                                     : 'bg-red-900 text-red-300';
                         val = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${color}">${val}</span>`;
                     }
@@ -214,12 +215,16 @@ class InventoryApp {
                     return `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${val}</td>`;
                 }).join('')}
 
-                ${this.currentType != "products" ?
-                `<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onclick="app.openModal(${item.id})" class="text-green-400 hover:text-green-300 mr-3">Edit</button>
-                    <button onclick="app.deleteEntry(${item.id})" class="text-red-400 hover:text-red-300">Delete</button>
-                </td>` : ''
-                }
+                ${this.currentType != "products" && this.currentType != "equipment" ? 
+    `<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <button onclick="app.openModal(${item.id})" class="text-green-400 hover:text-green-300 mr-3">Edit</button>
+        
+        ${this.currentType  == "stock" ? 
+            `<button onclick="app.deleteEntry(${item.id})" class="text-red-400 hover:text-red-300">Delete</button>` 
+            : '' 
+        }
+            </td>` 
+        : ''}
             </tr>
         `).join('');
     }
