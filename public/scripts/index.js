@@ -38,6 +38,11 @@ class ApiClient {
  * Maps the API data structure to the UI Columns
  */
 const RESOURCE_CONFIG = {
+    overview: {
+        label: 'Overview',
+        endpoint: 'dashboard/overview',
+        isOverview: true
+    },
     products: {
         label: 'Products',
         columns: [
@@ -46,18 +51,18 @@ const RESOURCE_CONFIG = {
             { key: 'price', label: 'Price', type: 'currency', editable: false },
             { key: 'description', label: 'Description', type: 'text', editable: false }
         ],
-        endpoint: 'products' // matches /api/products
+        endpoint: 'products'
     },
     stock: {
         label: 'Stock',
         columns: [
             { key: 'id', label: 'ID', type: 'text', editable: false },
-            { key: 'Product.name', label: 'Product Name', type: 'text', editable: false }, 
+            { key: 'Product.name', label: 'Product Name', type: 'text', editable: false },
             { key: 'qty', label: 'Qty', type: 'number', editable: true },
             { key: 'threshold', label: 'Threshold', type: 'number', editable: true },
             { key: 'price', label: 'Price', type: 'currency', editable: true }
         ],
-        endpoint: 'stock' // matches /api/stock
+        endpoint: 'stock'
     },
     orders: {
         label: 'Orders',
@@ -68,7 +73,7 @@ const RESOURCE_CONFIG = {
             { key: 'cost', label: 'Total Cost', type: 'currency', editable: false },
             { key: 'qty', label: 'Items', type: 'number', editable: false }
         ],
-        endpoint: 'orders' // matches /api/orders
+        endpoint: 'orders'
     },
     equipment: {
         label: 'Equipment',
@@ -78,9 +83,10 @@ const RESOURCE_CONFIG = {
             { key: 'status', label: 'Condition', type: 'status', editable: true },
             { key: 'qty', label: 'Qty', type: 'number', editable: false }
         ],
-        endpoint: 'equipment' // matches /api/equipment
+        endpoint: 'equipment'
     }
 };
+
 
 /**
  * Main Application Class
@@ -88,10 +94,11 @@ const RESOURCE_CONFIG = {
 class InventoryApp {
     constructor() {
         this.api = new ApiClient();
-        this.currentType = 'products';
+        this.currentType = 'overview'; // start on Overview
         this.currentData = [];
+        this.revenueChart = null; // Chart.js instance
 
-        // Bind DOM elements
+        // Cache DOM elements we need
         this.els = {
             nav: document.getElementById('nav-menu'),
             tableHead: document.getElementById('table-head'),
@@ -104,11 +111,24 @@ class InventoryApp {
             editId: document.getElementById('edit-id'),
             emptyState: document.getElementById('empty-state'),
             toast: document.getElementById('toast'),
-            toastMsg: document.getElementById('toast-message')
+            toastMsg: document.getElementById('toast-message'),
+
+            // Overview dashboard elements
+            overviewContainer: document.getElementById('overview-container'),
+            tableContainer: document.getElementById('table-container'),
+            cardTotalProducts: document.getElementById('card-total-products'),
+            cardTotalStock: document.getElementById('card-total-stock'),
+            cardTotalOrders: document.getElementById('card-total-orders'),
+            cardLowStock: document.getElementById('card-low-stock'),
+            cardInventoryValue: document.getElementById('card-inventory-value'),
+            bestSellersList: document.getElementById('best-sellers-list'),
+            worstSellersList: document.getElementById('worst-sellers-list'),
+            revenueCanvas: document.getElementById('monthly-revenue-chart')
         };
 
         this.init();
     }
+
 
     init() {
         this.renderNav();
@@ -151,10 +171,16 @@ class InventoryApp {
 
     async loadData(type) {
         try {
+            // Overview uses a special layout and endpoint
+            if (type === 'overview') {
+                await this.loadOverview();
+                return;
+            }
+
             const config = RESOURCE_CONFIG[type];
+            this.showTable();
             this.showToast('Loading data...', 'info');
 
-            // Call the Backend
             this.currentData = await this.api.get(config.endpoint);
 
             this.renderTable(this.currentData);
@@ -165,6 +191,8 @@ class InventoryApp {
             this.renderTable([]);
         }
     }
+
+
 
     // Helper to access nested properties safely (e.g. 'Product.name')
     getNestedValue(obj, path) {
@@ -230,8 +258,14 @@ class InventoryApp {
     }
 
     handleSearch(query) {
-        const lowerQuery = query.toLowerCase();
         const config = RESOURCE_CONFIG[this.currentType];
+
+        // No search on the Overview dashboard
+        if (!config || !config.columns || this.currentType === 'overview') {
+            return;
+        }
+
+        const lowerQuery = query.toLowerCase();
 
         const filtered = this.currentData.filter(item => {
             // Search across all defined columns
@@ -309,6 +343,135 @@ class InventoryApp {
             this.showToast('Failed to delete', 'error');
         }
     }
+
+    // Loads dashboard data and shows the Overview tab
+    async loadOverview() {
+        try {
+            this.showOverview();
+            this.showToast('Loading dashboard...', 'info');
+
+            const data = await this.api.get('dashboard/overview');
+            this.renderOverview(data);
+
+            this.showToast('Dashboard updated', 'success');
+        } catch (error) {
+            console.error(error);
+            this.showToast('Failed to load dashboard', 'error');
+        }
+    }
+
+    // Show dashboard, hide table
+    showOverview() {
+        if (!this.els.overviewContainer || !this.els.tableContainer) return;
+        this.els.overviewContainer.classList.remove('hidden');
+        this.els.tableContainer.classList.add('hidden');
+    }
+
+    // Show table, hide dashboard
+    showTable() {
+        if (!this.els.overviewContainer || !this.els.tableContainer) return;
+        this.els.overviewContainer.classList.add('hidden');
+        this.els.tableContainer.classList.remove('hidden');
+    }
+
+    // Handles filling the Overview tab
+    renderOverview(data) {
+        if (!data) return;
+        this.renderSummaryCards(data.summary);
+        this.renderRevenueChart(data.monthlyRevenue);
+        this.renderProductLists(data.bestSellers, data.worstSellers);
+    }
+
+    // Renders the small summary cards
+    renderSummaryCards(summary) {
+        if (!summary) return;
+
+        const formatCard = (label, value) => `
+            <div class="text-xs text-gray-400">${label}</div>
+            <div class="mt-1 text-xl font-semibold text:white text-white">${value}</div>
+        `;
+
+        this.els.cardTotalProducts.innerHTML = formatCard(
+            'Total Products',
+            summary.totalProducts
+        );
+
+        this.els.cardTotalStock.innerHTML = formatCard(
+            'Total Stock Items',
+            summary.totalStockItems
+        );
+
+        this.els.cardTotalOrders.innerHTML = formatCard(
+            'Total Orders',
+            summary.totalOrders
+        );
+
+        this.els.cardLowStock.innerHTML = formatCard(
+            'Items Low in Stock',
+            summary.lowStockCount
+        );
+
+        const formattedValue = `$${summary.inventoryValue.toFixed(2)}`;
+        this.els.cardInventoryValue.innerHTML = formatCard(
+            'Inventory Value',
+            formattedValue
+        );
+    }
+
+    // Draws the line chart for monthly revenue
+    renderRevenueChart(points) {
+        if (!this.els.revenueCanvas || !Array.isArray(points)) return;
+
+        const labels = points.map(p => p.month);
+        const values = points.map(p => p.total);
+        const ctx = this.els.revenueCanvas.getContext('2d');
+
+        // Destroy old chart if it exists
+        if (this.revenueChart) {
+            this.revenueChart.destroy();
+        }
+
+        this.revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Sales Revenue',
+                    data: values,
+                    tension: 0.3,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // Renders best and worst seller lists
+    renderProductLists(best, worst) {
+        const renderList = (ulEl, items) => {
+            if (!ulEl) return;
+            ulEl.innerHTML = '';
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between";
+                li.innerHTML = `
+                    <span>${item.name}</span>
+                    <span class="text-gray-400">${item.unitsSold} sold</span>
+                `;
+                ulEl.appendChild(li);
+            });
+        };
+
+        renderList(this.els.bestSellersList, best || []);
+        renderList(this.els.worstSellersList, worst || []);
+    }
+
 
     showToast(msg, type = 'info') {
         const colors = {

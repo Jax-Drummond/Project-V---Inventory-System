@@ -159,6 +159,87 @@ class InventoryService {
             eq.Product && eq.Product.name.toLowerCase().includes(lowerName)
         );
     }
+
+        // Builds all the data needed for the Overview dashboard
+    static async getDashboardOverview() {
+        // High-level summary numbers
+        const totalProducts = products.length;
+        const totalStockItems = stocks.reduce((sum, s) => sum + s.qty, 0); // total units
+        const totalOrders = orders.length;
+        const lowStockCount = stocks.filter(s => s.qty <= s.threshold).length;
+
+        // Total value of everything in stock
+        const inventoryValue = stocks.reduce(
+            (sum, s) => sum + (s.qty * s.price),
+            0
+        );
+
+        // Monthly revenue for the last 12 months
+        const now = new Date();
+        const monthlyRevenue = [];
+
+        for (let i = 11; i >= 0; i--) {
+            // Date for each month going back
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const label = d.toLocaleString('default', { month: 'short' });
+
+            // Sum order.cost for that month
+            const totalForMonth = orders
+                .filter(o => {
+                    const od = new Date(o.date);
+                    return od.getFullYear() === year && od.getMonth() === month;
+                })
+                .reduce((sum, o) => sum + (o.cost || 0), 0);
+
+            monthlyRevenue.push({ month: label, total: totalForMonth });
+        }
+
+        // Units sold per product (orders -> stock -> product)
+        const salesByProduct = new Map();
+
+        // Start all products at 0 so worst sellers include items with no sales
+        products.forEach(p => salesByProduct.set(p.id, 0));
+
+        orders.forEach(order => {
+            const stock = stocks.find(s => s.id === order.stockId);
+            if (!stock) return; // safety check
+
+            const productId = stock.productId;
+            const current = salesByProduct.get(productId) ?? 0;
+            salesByProduct.set(productId, current + (order.qty || 0));
+        });
+
+        const productSales = products.map(p => ({
+            id: p.id,
+            name: p.name,
+            unitsSold: salesByProduct.get(p.id) ?? 0
+        }));
+
+        // Sort by units sold, highest first
+        const sorted = [...productSales].sort(
+            (a, b) => b.unitsSold - a.unitsSold
+        );
+
+        const bestSellers = sorted.slice(0, 3);
+        const worstSellers = sorted.slice(-3).reverse(); // lowest first
+
+        return {
+            summary: {
+                totalProducts,
+                totalStockItems,
+                totalOrders,
+                lowStockCount,
+                inventoryValue
+            },
+            monthlyRevenue,
+            bestSellers,
+            worstSellers
+        };
+    }
+
+
 }
 
 export default InventoryService;

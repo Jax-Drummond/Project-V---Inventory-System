@@ -3,6 +3,7 @@ import volleyball from "volleyball"
 import path from "path"
 
 // Route Imports
+import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 import productRoutes from "./src/routes/productRoutes.js"
 import equipmentRoutes from "./src/routes/equipmentRoutes.js"
 import stockRoutes from "./src/routes/stockRoutes.js"
@@ -26,6 +27,7 @@ app.use("/api/products", productRoutes)
 app.use("/api/equipment", equipmentRoutes)
 app.use("/api/stock", stockRoutes)
 app.use("/api/orders", orderRoutes)
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get('/test', (req, res) =>
 {
