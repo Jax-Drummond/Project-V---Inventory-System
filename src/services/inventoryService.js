@@ -1,191 +1,225 @@
-import { products, stocks, equipment, orders } from "../data/data.js";
-
-
-// This only works for the mock data
-// Will need to be changed to work with external api
+const BASE_URL = "http://localhost:3000/api/inventory";
 
 class InventoryService {
 
-    static _getProduct(id) {
-        return products.find(p => p.id === parseInt(id));
+    static async _fetch(endpoint, options = {}) {
+        try {
+            const res = await fetch(`${BASE_URL}${endpoint}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            });
+
+            const data = await res.json();
+
+            if (!data.success) {
+                console.error(`API Error on ${endpoint}:`, data.message);
+                return null;
+            }
+            return data.data;
+        } catch (error) {
+            console.error(`Network Error on ${endpoint}:`, error);
+            return null;
+        }
     }
 
-    static _getStock(id) {
-        return stocks.find(s => s.id === parseInt(id));
-    }
 
     static async getAllProducts() {
-        return products;
+        const data = await this._fetch('/product');
+        if (!data) return [];
+
+        return data.map(p => ({
+            id: p.ProductID,
+            name: p.ProductName,
+            description: p.ProductDescription,
+            price: parseFloat(p.Price)
+        }));
     }
 
     static async getProductById(id) {
-        return this._getProduct(id);
+        const products = await this.getAllProducts();
+        return products.find(p => p.id === parseInt(id));
     }
 
     static async getProductsByName(partialName) {
+        const products = await this.getAllProducts();
         const lowerName = partialName.toLowerCase();
         return products.filter(p => p.name.toLowerCase().includes(lowerName));
     }
 
 
     static async getAllStock() {
-        return stocks.map(stock => ({
-            ...stock,
-            Product: this._getProduct(stock.productId)
+        const data = await this._fetch('/productstock');
+        if (!data) return [];
+
+        return data.map(s => ({
+            id: s.StockID,
+            qty: s.QuantityAvailable,
+            threshold: s.RestockThreshold,
+            lastRestock: s.LastRestockDate,
+            productId: s.ProductID,
+            Product: {
+                id: s.ProductID,
+                name: s.ProductName,
+                price: 0 
+            }
         }));
     }
 
     static async getStockById(id) {
-        const stock = this._getStock(id);
-        if (!stock) return null;
-        return {
-            ...stock,
-            Product: this._getProduct(stock.productId)
-        };
+        const stocks = await this.getAllStock();
+        return stocks.find(s => s.id === parseInt(id)) || null;
     }
 
     static async createStock(data) {
-        const newStock = {
-            id: stocks.length + 1,
+        const payload = {
+            productid: data.productId,
             qty: data.qty,
-            threshold: data.threshold || 0,
-            price: data.price || 0,
-            productId: data.productId
+            restock: data.threshold,
+            lastrestock: new Date().toISOString().slice(0, 19).replace('T', ' ')
         };
-        stocks.push(newStock);
-        return newStock;
+
+        const response = await this._fetch('/productstock', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        // Return the newly created object structure
+        return { ...data, id: response ? response.productID : null };
     }
 
     static async updateStock(id, data) {
-        const stock = this._getStock(id);
-        if (!stock) return null;
+        const payload = {
+            productid: data.productId,
+            qty: data.qty,
+            restock: data.threshold
+        };
 
-        if (data.qty !== undefined) stock.qty = data.qty;
-        if (data.threshold !== undefined) stock.threshold = data.threshold;
-        if (data.price !== undefined) stock.price = data.price;
+        await this._fetch(`/productstock/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+        });
 
-        return stock;
+        return this.getStockById(id);
     }
 
     static async deleteStock(id) {
-        const index = stocks.findIndex(s => s.id === parseInt(id));
-        if (index === -1) return false;
-        stocks.splice(index, 1);
-        return true;
+        const data = await this._fetch(`/productstock/${id}`, { method: 'DELETE' });
+        return !!data;
     }
 
 
+
     static async getAllOrders() {
-        return orders.map(order => {
-            const stock = this._getStock(order.stockId);
-            const product = stock ? this._getProduct(stock.productId) : null;
+        const ordersData = await this._fetch('/stockorder');
+        if (!ordersData) return [];
+
+        const products = await this.getAllProducts();
+        const stocks = await this.getAllStock();
+
+        return ordersData.map(o => {
+            const product = products.find(p => p.id === o.ProductID);
+            const stock = stocks.find(s => s.productId === o.ProductID);
+
+            let status = "Pending";
+            if (o.ReceivedAt && o.ReceivedAt !== "0000-00-00") status = "Received";
+
             return {
-                ...order,
-                Stock: stock,
-                Product: product
+                id: o.StockOrderID,
+                qty: o.QuantityOrdered,
+                cost: product ? (product.price * o.QuantityOrdered) : 0,
+                status: status,
+                date: o.OrderedAt,
+                receivedDate: o.ReceivedAt,
+                supplier: o.SupplierName,
+                stockId: stock ? stock.id : null,
+                productId: o.ProductID,
+                Product: product || null,
+                Stock: stock || null
             };
         });
     }
 
     static async getOrderById(id) {
-        const order = orders.find(o => o.id === parseInt(id));
-        if (!order) return null;
-
-        const stock = this._getStock(order.stockId);
-        const product = stock ? this._getProduct(stock.productId) : null;
-
-        return {
-            ...order,
-            Stock: stock,
-            Product: product
-        };
+        const orders = await this.getAllOrders();
+        return orders.find(o => o.id === parseInt(id)) || null;
     }
 
     static async createOrder(data) {
-        const newOrder = {
-            id: orders.length + 1,
+        const payload = {
+            productid: data.productId || (data.Stock ? data.Stock.productId : null),
             qty: data.qty,
-            cost: data.cost,
-            status: data.status,
-            date: new Date(),
-            stockId: data.stockId
+            suppliername: "External Supplier",
+            ordered: new Date().toISOString().slice(0, 10)
         };
-        orders.push(newOrder);
-        return newOrder;
+
+        const res = await this._fetch('/stockorder', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        return res;
     }
 
     static async updateOrderStatus(id, status) {
-        const order = orders.find(o => o.id === parseInt(id));
-        if (!order) return null;
-        order.status = status;
-        return order;
+        if (status.toLowerCase() === 'received') {
+            await this._fetch(`/stockorder/received/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    received: new Date().toISOString().slice(0, 10)
+                })
+            });
+        }
+        return this.getOrderById(id);
     }
 
     static async deleteOrder(id) {
-        const index = orders.findIndex(o => o.id === parseInt(id));
-        if (index === -1) return false;
-        orders.splice(index, 1);
-        return true;
+        const res = await this._fetch(`/stockorder/${id}`, { method: 'DELETE' });
+        return !!res;
     }
 
-    // --- EQUIPMENT SERVICES ---
-
     static async getAllEquipment() {
-        return equipment.map(eq => ({
-            ...eq,
-            Product: this._getProduct(eq.productId)
-        }));
+        console.warn("API: No equipment endpoints available.");
+        return [];
     }
 
     static async getEquipmentById(id) {
-        const eq = equipment.find(e => e.id === parseInt(id));
-        if (!eq) return null;
-        return {
-            ...eq,
-            Product: this._getProduct(eq.productId)
-        };
+        return null;
     }
 
     static async getEquipmentByPartialName(partialName) {
-
-        const lowerName = partialName.toLowerCase();
-
-        const joinedEquipment = equipment.map(eq => ({
-            ...eq,
-            Product: this._getProduct(eq.productId)
-        }));
-
-        return joinedEquipment.filter(eq =>
-            eq.Product && eq.Product.name.toLowerCase().includes(lowerName)
-        );
+        return [];
     }
 
-        // Builds all the data needed for the Overview dashboard
     static async getDashboardOverview() {
-        // High-level summary numbers
+        const [products, stocks, orders] = await Promise.all([
+            this.getAllProducts(),
+            this.getAllStock(),
+            this.getAllOrders()
+        ]);
+
         const totalProducts = products.length;
-        const totalStockItems = stocks.reduce((sum, s) => sum + s.qty, 0); // total units
+        const totalStockItems = stocks.reduce((sum, s) => sum + s.qty, 0);
         const totalOrders = orders.length;
         const lowStockCount = stocks.filter(s => s.qty <= s.threshold).length;
 
-        // Total value of everything in stock
-        const inventoryValue = stocks.reduce(
-            (sum, s) => sum + (s.qty * s.price),
-            0
-        );
+        const inventoryValue = stocks.reduce((sum, s) => {
+            const product = products.find(p => p.id === s.productId);
+            const price = product ? product.price : 0;
+            return sum + (s.qty * price);
+        }, 0);
 
-        // Monthly revenue for the last 12 months
         const now = new Date();
         const monthlyRevenue = [];
 
         for (let i = 11; i >= 0; i--) {
-            // Date for each month going back
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
             const year = d.getFullYear();
             const month = d.getMonth();
             const label = d.toLocaleString('default', { month: 'short' });
 
-            // Sum order.cost for that month
             const totalForMonth = orders
                 .filter(o => {
                     const od = new Date(o.date);
@@ -196,19 +230,13 @@ class InventoryService {
             monthlyRevenue.push({ month: label, total: totalForMonth });
         }
 
-        // Units sold per product (orders -> stock -> product)
         const salesByProduct = new Map();
-
-        // Start all products at 0 so worst sellers include items with no sales
         products.forEach(p => salesByProduct.set(p.id, 0));
 
         orders.forEach(order => {
-            const stock = stocks.find(s => s.id === order.stockId);
-            if (!stock) return; // safety check
-
-            const productId = stock.productId;
-            const current = salesByProduct.get(productId) ?? 0;
-            salesByProduct.set(productId, current + (order.qty || 0));
+            const pid = order.productId;
+            const current = salesByProduct.get(pid) ?? 0;
+            salesByProduct.set(pid, current + (order.qty || 0));
         });
 
         const productSales = products.map(p => ({
@@ -217,13 +245,7 @@ class InventoryService {
             unitsSold: salesByProduct.get(p.id) ?? 0
         }));
 
-        // Sort by units sold, highest first
-        const sorted = [...productSales].sort(
-            (a, b) => b.unitsSold - a.unitsSold
-        );
-
-        const bestSellers = sorted.slice(0, 3);
-        const worstSellers = sorted.slice(-3).reverse(); // lowest first
+        const sorted = [...productSales].sort((a, b) => b.unitsSold - a.unitsSold);
 
         return {
             summary: {
@@ -234,12 +256,10 @@ class InventoryService {
                 inventoryValue
             },
             monthlyRevenue,
-            bestSellers,
-            worstSellers
+            bestSellers: sorted.slice(0, 3),
+            worstSellers: sorted.slice(-3).reverse()
         };
     }
-
-
 }
 
 export default InventoryService;
