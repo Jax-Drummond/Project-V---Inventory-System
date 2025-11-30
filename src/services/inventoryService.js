@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 const BASE_URL = "http://projectv.space:3000/api/inventory";
 
 class InventoryService {
