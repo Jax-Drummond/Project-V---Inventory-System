@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000/api/inventory";
+const BASE_URL = "http://projectv.space:3000/api/inventory";
 
 class InventoryService {
 

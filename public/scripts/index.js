@@ -60,7 +60,6 @@ const RESOURCE_CONFIG = {
             { key: 'Product.name', label: 'Product Name', type: 'text', editable: false },
             { key: 'qty', label: 'Qty', type: 'number', editable: true },
             { key: 'threshold', label: 'Threshold', type: 'number', editable: true },
-            { key: 'price', label: 'Price', type: 'currency', editable: true }
         ],
         endpoint: 'stock'
     },
