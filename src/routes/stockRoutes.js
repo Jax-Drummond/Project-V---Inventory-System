@@ -6,6 +6,7 @@ const router = express.Router();
 // READ
 router.get("/", StockController.getAllStock);
 router.get("/:id", StockController.getStockByID);
+router.get("/product/:id", StockController.getStockByProductID);
 
 // CREATE
 router.post("/", StockController.createStock);

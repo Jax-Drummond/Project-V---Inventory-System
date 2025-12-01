@@ -74,6 +74,11 @@ class InventoryService {
         return stocks.find(s => s.id === parseInt(id)) || null;
     }
 
+    static async getStockByProductId(id) {
+        const stocks = await this.getAllStock();
+        return stocks.find(s => s.productId === parseInt(id)) || null;
+    }
+
     static async createStock(data) {
         const payload = {
             productid: data.productId,

@@ -22,6 +22,18 @@ class StockController {
         }
     }
 
+    static async getStockByProductID(req, res) {
+        try {
+            const stock = await InventoryService.getStockByProductId(req.params.id);
+            if (!stock) {
+                return res.status(404).json({ message: "Item not found." });
+            }
+            res.status(200).json(stock);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
     static async createStock(req, res) {
         try {
             const { qty, threshold, price, productId } = req.body;
