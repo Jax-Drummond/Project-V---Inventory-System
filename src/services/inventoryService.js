@@ -28,10 +28,27 @@ class InventoryService {
 
 
     static async getAllProducts() {
-        const data = await this._fetch('/product');
-        if (!data) return [];
+        const productsData = await this._fetch('/product');
+        if (!productsData) return [];
 
-        return data.map(p => ({
+        const stockData = await this._fetch('/product-stock') || [];
+
+        const existingStockProductIds = new Set(stockData.map(s => s.ProductID));
+
+        const productsMissingStock = productsData.filter(p => !existingStockProductIds.has(p.ProductID));
+
+        if (productsMissingStock.length > 0) {
+            await Promise.all(productsMissingStock.map(p => {
+                return this.createStock({
+                    productId: p.ProductID,
+                    qty: 15,             // Default quantity
+                    threshold: 10       // Default threshold
+                });
+            }));
+            console.log(`Created stock entries for ${productsMissingStock.length} new products.`);
+        }
+
+        return productsData.map(p => ({
             id: p.ProductID,
             name: p.ProductName,
             description: p.ProductDescription,
@@ -52,7 +69,7 @@ class InventoryService {
 
 
     static async getAllStock() {
-        const data = await this._fetch('/productstock');
+        const data = await this._fetch('/product-stock');
         if (!data) return [];
 
         return data.map(s => ({
@@ -64,7 +81,7 @@ class InventoryService {
             Product: {
                 id: s.ProductID,
                 name: s.ProductName,
-                price: 0 
+                price: 0
             }
         }));
     }
@@ -81,13 +98,13 @@ class InventoryService {
 
     static async createStock(data) {
         const payload = {
-            productid: data.productId,
+            productId: data.productId,
             qty: data.qty,
             restock: data.threshold,
-            lastrestock: new Date().toISOString().slice(0, 19).replace('T', ' ')
+            lastRestock: new Date().toISOString().slice(0, 19).replace('T', ' ')
         };
 
-        const response = await this._fetch('/productstock', {
+        const response = await this._fetch('/product-stock', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
@@ -97,13 +114,17 @@ class InventoryService {
     }
 
     static async updateStock(id, data) {
+        // Remove later
+        const stock = await this.getStockByProductId(id)
+        id = stock.id
+
         const payload = {
             productid: data.productId,
             qty: data.qty,
             restock: data.threshold
         };
 
-        await this._fetch(`/productstock/${id}`, {
+        await this._fetch(`/product-stock/${id}`, {
             method: 'PATCH',
             body: JSON.stringify(payload)
         });
@@ -112,14 +133,14 @@ class InventoryService {
     }
 
     static async deleteStock(id) {
-        const data = await this._fetch(`/productstock/${id}`, { method: 'DELETE' });
+        const data = await this._fetch(`/product-stock/${id}`, { method: 'DELETE' });
         return !!data;
     }
 
 
 
     static async getAllOrders() {
-        const ordersData = await this._fetch('/stockorder');
+        const ordersData = await this._fetch('/stock-order');
         if (!ordersData) return [];
 
         const products = await this.getAllProducts();
@@ -160,7 +181,7 @@ class InventoryService {
             ordered: new Date().toISOString().slice(0, 10)
         };
 
-        const res = await this._fetch('/stockorder', {
+        const res = await this._fetch('/stock-order', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
@@ -169,7 +190,7 @@ class InventoryService {
     }
 
     static async updateOrderStatus(id, status) {
-        await this._fetch(`/stockorder/${id}`, {
+        await this._fetch(`/stock-order/${id}`, {
             method: 'PATCH',
             body: JSON.stringify({
                 received: status.toLowerCase() == "received" ? new Date().toISOString().slice(0, 10) : "0-0-0",
@@ -180,7 +201,7 @@ class InventoryService {
     }
 
     static async deleteOrder(id) {
-        const res = await this._fetch(`/stockorder/${id}`, { method: 'DELETE' });
+        const res = await this._fetch(`/stock-order/${id}`, { method: 'DELETE' });
         return !!res;
     }
 
