@@ -1,3 +1,4 @@
+import { equipment } from "../data/data.js";
 import InventoryService from "../services/inventoryService.js";
 
 class EquipmentController {
@@ -33,6 +34,26 @@ class EquipmentController {
             const equipment = await InventoryService.getEquipmentByPartialName(name);
 
             res.status(200).json(equipment);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    static async updateEquipmentStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            const updatedEquipmentStatus = await InventoryService.updateEquipmentStatus(id, { status });
+
+            if (!updatedEquipmentStatus) {
+                return res.status(404).json({ message: "Stock not found." });
+            }
+
+            res.status(200).json({
+                message: "Stock updated",
+                equipment: updatedEquipmentStatus
+            });
         } catch (e) {
             res.status(500).json({ error: e.message });
         }

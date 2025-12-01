@@ -131,10 +131,9 @@ class InventoryService {
                 id: o.StockOrderID,
                 qty: o.QuantityOrdered,
                 cost: product ? (product.price * o.QuantityOrdered) : 0,
-                status: status,
+                status: o.SupplierName,
                 date: o.OrderedAt,
                 receivedDate: o.ReceivedAt,
-                supplier: o.SupplierName,
                 stockId: stock ? stock.id : null,
                 productId: o.ProductID,
                 Product: product || null,
@@ -152,7 +151,7 @@ class InventoryService {
         const payload = {
             productid: data.productId || (data.Stock ? data.Stock.productId : null),
             qty: data.qty,
-            suppliername: "External Supplier",
+            suppliername: data.status,
             ordered: new Date().toISOString().slice(0, 10)
         };
 
@@ -165,14 +164,13 @@ class InventoryService {
     }
 
     static async updateOrderStatus(id, status) {
-        if (status.toLowerCase() === 'received') {
-            await this._fetch(`/stockorder/received/${id}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    received: new Date().toISOString().slice(0, 10)
-                })
-            });
-        }
+        await this._fetch(`/stockorder/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                received: status.toLowerCase() == "received" ? new Date().toISOString().slice(0, 10) : "0-0-0",
+                suppliername: status
+            })
+        });
         return this.getOrderById(id);
     }
 

@@ -67,7 +67,8 @@ const RESOURCE_CONFIG = {
         label: 'Orders',
         columns: [
             { key: 'id', label: 'Order ID', type: 'text', editable: false },
-            { key: 'date', label: 'Date', type: 'date', editable: false },
+            { key: 'stockId', label: 'Stock ID', type: 'text', editable: false },
+            { key: 'date', label: 'Ordered Date', type: 'date', editable: false },
             { key: 'status', label: 'Status', type: 'status', editable: true },
             { key: 'cost', label: 'Total Cost', type: 'currency', editable: false },
             { key: 'qty', label: 'Items', type: 'number', editable: false }
