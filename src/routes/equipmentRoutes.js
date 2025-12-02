@@ -12,4 +12,7 @@ router.get("/search", EquipmentController.getEquipmentByPartialName);
 // Get single equipment by ID (route param)
 router.get("/:id", EquipmentController.getEquipmentByID);
 
+// Update the status
+router.put("/:id", EquipmentController.updateEquipmentStatus)
+
 export default router;

@@ -101,6 +101,7 @@ npm test
 | `GET`  | `/`                      | Get all equipment                |
 | `GET`  | `/search?name=<partial>` | Search equipment by partial name |
 | `GET`  | `/:id`                   | Get equipment by ID              |
+| `PUT`  | `/:id`                   | Update the Availability          |
 
 ---
 
