@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-const BASE_URL = "http://projectv.space:3000/api/inventory";
+const BASE_URL = "http://projectv.space:3000/api/";
 
 class InventoryService {
 
@@ -28,10 +28,10 @@ class InventoryService {
 
 
     static async getAllProducts() {
-        const productsData = await this._fetch('/product');
+        const productsData = await this._fetch('inventory/product');
         if (!productsData) return [];
 
-        const stockData = await this._fetch('/product-stock') || [];
+        const stockData = await this._fetch('inventory/product-stock') || [];
 
         const existingStockProductIds = new Set(stockData.map(s => s.ProductID));
 
@@ -69,7 +69,7 @@ class InventoryService {
 
 
     static async getAllStock() {
-        const data = await this._fetch('/product-stock');
+        const data = await this._fetch('inventory/product-stock');
         if (!data) return [];
 
         return data.map(s => ({
@@ -104,7 +104,7 @@ class InventoryService {
             lastRestock: new Date().toISOString().slice(0, 19).replace('T', ' ')
         };
 
-        const response = await this._fetch('/product-stock', {
+        const response = await this._fetch('inventory/product-stock', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
@@ -114,7 +114,7 @@ class InventoryService {
     }
 
     static async updateStock(id, data) {
-        // Remove later
+        // Remove later -- Database logic messed up
         const stock = await this.getStockByProductId(id)
         id = stock.id
 
@@ -124,7 +124,7 @@ class InventoryService {
             restock: data.threshold
         };
 
-        await this._fetch(`/product-stock/${id}`, {
+        await this._fetch(`inventory/product-stock/${id}`, {
             method: 'PATCH',
             body: JSON.stringify(payload)
         });
@@ -133,14 +133,12 @@ class InventoryService {
     }
 
     static async deleteStock(id) {
-        const data = await this._fetch(`/product-stock/${id}`, { method: 'DELETE' });
+        const data = await this._fetch(`inventory/product-stock/${id}`, { method: 'DELETE' });
         return !!data;
     }
 
-
-
     static async getAllOrders() {
-        const ordersData = await this._fetch('/stock-order');
+        const ordersData = await this._fetch('inventory/stock-order');
         if (!ordersData) return [];
 
         const products = await this.getAllProducts();
@@ -181,7 +179,7 @@ class InventoryService {
             ordered: new Date().toISOString().slice(0, 10)
         };
 
-        const res = await this._fetch('/stock-order', {
+        const res = await this._fetch('inventory/stock-order', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
@@ -190,7 +188,7 @@ class InventoryService {
     }
 
     static async updateOrderStatus(id, status) {
-        await this._fetch(`/stock-order/${id}`, {
+        await this._fetch(`inventory/stock-order/${id}`, {
             method: 'PATCH',
             body: JSON.stringify({
                 received: status.toLowerCase() == "received" ? new Date().toISOString().slice(0, 10) : "0-0-0",
@@ -201,21 +199,42 @@ class InventoryService {
     }
 
     static async deleteOrder(id) {
-        const res = await this._fetch(`/stock-order/${id}`, { method: 'DELETE' });
+        const res = await this._fetch(`inventory/stock-order/${id}`, { method: 'DELETE' });
         return !!res;
     }
 
     static async getAllEquipment() {
-        console.warn("API: No equipment endpoints available.");
-        return [];
+        const data = await this._fetch('fleet/equipment');
+        if (!data) return [];
+
+        return data.map(e => ({
+            id: e.EquipmentCode,
+            name: e.EquipmentName,
+            status: e.EquipmentAvailability,
+            type: e.EquipmentType
+        }));
     }
 
     static async getEquipmentById(id) {
-        return null;
+        const equipment = await this.getAllEquipment();
+        return equipment.find(e => e.id === parseInt(id)) || null;
     }
 
     static async getEquipmentByPartialName(partialName) {
-        return [];
+        const equipment = await this.getAllEquipment();
+        const lowerName = partialName.toLowerCase();
+        return equipment.filter(e => e.name.toLowerCase().includes(lowerName));
+    }
+
+    static async updateEquipmentStatus(id, data)
+    {
+        await this._fetch(`fleet/equipment/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                availability: data.status,
+            })
+        });
+        return this.getEquipmentById(id);
     }
 
     static async getDashboardOverview() {

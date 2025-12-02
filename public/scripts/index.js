@@ -79,9 +79,9 @@ const RESOURCE_CONFIG = {
         label: 'Equipment',
         columns: [
             { key: 'id', label: 'Asset ID', type: 'text', editable: false },
-            { key: 'Product.name', label: 'Equipment Type', type: 'text', editable: false },
+            { key: 'name', label: 'Equipment Name', type: 'text', editable: false },
+            { key: 'type', label: 'Equipment Type', type: 'text', editable: false },
             { key: 'status', label: 'Condition', type: 'status', editable: true },
-            { key: 'qty', label: 'Qty', type: 'number', editable: false }
         ],
         endpoint: 'equipment'
     }
@@ -280,6 +280,7 @@ class InventoryApp {
 
     openModal(id) {
         const item = this.currentData.find(d => d.id === id);
+        console.log(id)
         if (!item) return;
 
         const config = RESOURCE_CONFIG[this.currentType];
@@ -315,6 +316,7 @@ class InventoryApp {
     async handleSave(e) {
         e.preventDefault();
         const id = this.els.editId.value;
+        console.log(id)
         const formData = new FormData(this.els.editForm);
         const data = Object.fromEntries(formData.entries());
 
