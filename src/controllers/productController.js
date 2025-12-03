@@ -30,6 +30,12 @@ class ProductController {
             }
 
             const products = await InventoryService.getProductsByName(name);
+
+            if (!products[0])
+            {
+                return res.status(404).json({message: "No products found."});
+            }
+
             res.status(200).json(products);
         } catch (e) {
             res.status(500).json({ error: e.message });
