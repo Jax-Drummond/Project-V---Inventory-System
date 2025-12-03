@@ -1,4 +1,3 @@
-import { equipment } from "../data/data.js";
 import InventoryService from "../services/inventoryService.js";
 
 class EquipmentController {
