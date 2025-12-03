@@ -1,6 +1,24 @@
+/**
+ * @file stockController.js
+ * @description All the routes functionality for the stock.
+ * @author Owen, Jax
+ * @version 1.1.2
+ * @date 2025-10-19
+ * @module StockController
+ */
+
 import InventoryService from "../services/inventoryService.js";
 
+/**
+ * Controls all of the functionality for the stock endpoints.
+ * @class
+ */
 class StockController {
+    /**
+     * Gets all the stock.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     */
     static async getAllStock(req, res) {
         try {
             const stock = await InventoryService.getAllStock();
@@ -10,6 +28,12 @@ class StockController {
         }
     }
 
+    /**
+     * Gets stock by id.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async getStockByID(req, res) {
         try {
             const stock = await InventoryService.getStockById(req.params.id);
@@ -22,6 +46,12 @@ class StockController {
         }
     }
 
+    /**
+     * Gets stock by product ID.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async getStockByProductID(req, res) {
         try {
             const stock = await InventoryService.getStockByProductId(req.params.id);
@@ -34,6 +64,12 @@ class StockController {
         }
     }
 
+    /**
+     * Creates a new stock.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async createStock(req, res) {
         try {
             const { qty, threshold, price, productId } = req.body;
@@ -59,6 +95,12 @@ class StockController {
         }
     }
 
+    /**
+     * Updates a stock.
+     * @param {object} req The request.
+     * @param {object} res The Response.
+     * @returns A response.
+     */
     static async updateStock(req, res) {
         try {
             const { id } = req.params;
@@ -79,6 +121,12 @@ class StockController {
         }
     }
 
+    /**
+     * Deletes a stock.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async deleteStock(req, res) {
         try {
             const { id } = req.params;

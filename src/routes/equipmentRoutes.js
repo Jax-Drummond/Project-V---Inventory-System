@@ -1,3 +1,12 @@
+/**
+ * @file equipmentRoutes.js
+ * @description All the routes for the equipment.
+ * @author Jax
+ * @version 1.0.3
+ * @date 2025-9-26
+ * @module router
+ */
+
 import express from "express"
 import EquipmentController from "../controllers/equipmentController.js"
 

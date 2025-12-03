@@ -1,8 +1,27 @@
+/**
+ * @file inventoryService.js
+ * @description Acts as the adapter between our backend and the database team's backend.
+ * @author Jax, Owen, Kahlib
+ * @version 1.0.0
+ * @date 2025-11-18
+ * @module InventoryService
+ */
+
 import fetch from "node-fetch";
 const BASE_URL = "http://projectv.space:3000/api/";
 
+/**
+ * Is essentially an adapter to communicate with the database's backend
+ * @class
+ */
 class InventoryService {
 
+    /**
+     * Is the universal fetch used internally.
+     * @param {string} endpoint The endpoint to fetch.
+     * @param {**} options The extra options or data to send with the request.
+     * @returns The data of the response or null.
+     */
     static async _fetch(endpoint, options = {}) {
         try {
             const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -26,7 +45,10 @@ class InventoryService {
         }
     }
 
-
+    /**
+     * Gets all products from the database. Also creates stocks for any products without one.
+     * @returns A array of json product objects.
+     */
     static async getAllProducts() {
         const productsData = await this._fetch('inventory/product');
         if (!productsData) return [];
@@ -56,18 +78,31 @@ class InventoryService {
         }));
     }
 
+    /**
+     * Gets a product by it's ID.
+     * @param {number} id The id of the product you want to find.
+     * @returns The product.
+     */
     static async getProductById(id) {
         const products = await this.getAllProducts();
         return products.find(p => p.id === parseInt(id));
     }
 
+    /**
+     * Gets a product by it's name.
+     * @param {string} partialName The name of the product.
+     * @returns The product.
+     */
     static async getProductsByName(partialName) {
         const products = await this.getAllProducts();
         const lowerName = partialName.toLowerCase();
         return products.filter(p => p.name.toLowerCase().includes(lowerName));
     }
 
-
+    /**
+     * Gets all stocks.
+     * @returns An array of stock json objects.
+     */
     static async getAllStock() {
         const data = await this._fetch('inventory/product-stock');
         if (!data) return [];
@@ -86,16 +121,31 @@ class InventoryService {
         }));
     }
 
+    /**
+     * Gets a stock by it's ID.
+     * @param {number} id The ID of the stock.
+     * @returns The stock.
+     */
     static async getStockById(id) {
         const stocks = await this.getAllStock();
         return stocks.find(s => s.id === parseInt(id)) || null;
     }
 
+    /**
+     * Gets a stock by it's product ID.
+     * @param {number} id The id of the product.
+     * @returns The stock.
+     */
     static async getStockByProductId(id) {
         const stocks = await this.getAllStock();
         return stocks.find(s => s.productId === parseInt(id)) || null;
     }
 
+    /**
+     * Using the data given, creates a new stock.
+     * @param {object} data The data of the new stock you want to create.
+     * @returns The response.
+     */
     static async createStock(data) {
         const payload = {
             productId: data.productId,
@@ -113,6 +163,12 @@ class InventoryService {
         return { ...data, id: response ? response.productID : null };
     }
 
+    /**
+     * Updates an existing stock.
+     * @param {number} id The ID of the stock you want to update.
+     * @param {object} data The new data you want updated.
+     * @returns The new updated stock.
+     */
     static async updateStock(id, data) {
         // Remove later -- Database logic messed up
         const stock = await this.getStockByProductId(id)
@@ -157,11 +213,20 @@ class InventoryService {
         return this.getStockById(id);
     }
 
+    /**
+     * Deletes a stock.
+     * @param {number} id The ID of the stock you want to delete.
+     * @returns Whether or not the stock was deleted.
+     */
     static async deleteStock(id) {
         const data = await this._fetch(`inventory/product-stock/${id}`, { method: 'DELETE' });
         return !!data;
     }
 
+    /**
+     * Gets all orders.
+     * @returns An array of order json objects.
+     */
     static async getAllOrders() {
         const ordersData = await this._fetch('inventory/stock-order');
         if (!ordersData) return [];
@@ -191,11 +256,21 @@ class InventoryService {
         });
     }
 
+    /**
+     * Get an order by it's ID.
+     * @param {number} id The ID of the object you want to get.
+     * @returns The order.
+     */
     static async getOrderById(id) {
         const orders = await this.getAllOrders();
         return orders.find(o => o.id === parseInt(id)) || null;
     }
 
+    /**
+     * Creates a new order.
+     * @param {object} data The data of the order you want to create.
+     * @returns The response.
+     */
     static async createOrder(data) {
         const payload = {
             productid: data.productId || (data.Stock ? data.Stock.productId : null),
@@ -213,6 +288,12 @@ class InventoryService {
         return res;
     }
 
+    /**
+     * Updates the status of an order.
+     * @param {number} id The ID of the order you want to update.
+     * @param {string} status The new status of the order.
+     * @returns The new updated order.
+     */
     static async updateOrderStatus(id, status) {
         await this._fetch(`inventory/stock-order/${id}`, {
             method: 'PATCH',
@@ -224,11 +305,20 @@ class InventoryService {
         return this.getOrderById(id);
     }
 
+    /**
+     * Deletes an order.
+     * @param {number} id The ID of the order you want to delete.
+     * @returns Whether the order was deleted or not.
+     */
     static async deleteOrder(id) {
         const res = await this._fetch(`inventory/stock-order/${id}`, { method: 'DELETE' });
         return !!res;
     }
 
+    /**
+     * Gets all equipment.
+     * @returns An array of equipment json objects.
+     */
     static async getAllEquipment() {
         const data = await this._fetch('fleet/equipment');
         if (!data) return [];
@@ -241,17 +331,33 @@ class InventoryService {
         }));
     }
 
+    /**
+     * Gets an equipment by it's ID.
+     * @param {number} id the ID of the equipment you want to get.
+     * @returns The equipment.
+     */
     static async getEquipmentById(id) {
         const equipment = await this.getAllEquipment();
         return equipment.find(e => e.id === parseInt(id)) || null;
     }
 
+    /**
+     * Gets an equipment by it's name.
+     * @param {string} partialName The name of the equipment you want to get.
+     * @returns The equipment.
+     */
     static async getEquipmentByPartialName(partialName) {
         const equipment = await this.getAllEquipment();
         const lowerName = partialName.toLowerCase();
         return equipment.filter(e => e.name.toLowerCase().includes(lowerName));
     }
 
+    /**
+     * Updates the status of an equipment.
+     * @param {number} id The ID of the equipment you want to update.
+     * @param {object} data The new status of the equipment.
+     * @returns The new updated equipment.
+     */
     static async updateEquipmentStatus(id, data)
     {
         await this._fetch(`fleet/equipment/${id}`, {
@@ -263,6 +369,10 @@ class InventoryService {
         return this.getEquipmentById(id);
     }
 
+    /**
+     * Gets the information that is needed to be displayed on the dashboard.
+     * @returns Required Information.
+     */
     static async getDashboardOverview() {
         const [products, stocks, orders] = await Promise.all([
             this.getAllProducts(),

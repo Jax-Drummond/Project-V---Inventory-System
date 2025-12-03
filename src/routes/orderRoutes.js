@@ -1,3 +1,12 @@
+/**
+ * @file orderRoutes.js
+ * @description All the routes for the orders.
+ * @author Owen
+ * @version 1.0.0
+ * @date 2025-10-19
+ * @module router
+ */
+
 import express from "express";
 import OrderController from "../controllers/orderController.js";
 

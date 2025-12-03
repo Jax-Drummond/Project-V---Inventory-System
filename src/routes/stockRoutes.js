@@ -1,3 +1,12 @@
+/**
+ * @file stockRoutes.js
+ * @description All the routes for the stock.
+ * @author Owen
+ * @version 1.0.0
+ * @date 2025-10-19
+ * @module router
+ */
+
 import express from "express";
 import StockController from "../controllers/stockController.js";
 

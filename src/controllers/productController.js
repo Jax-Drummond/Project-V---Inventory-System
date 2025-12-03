@@ -1,6 +1,24 @@
+/**
+ * @file productController.js
+ * @description All the routes functionality for the product.
+ * @author Jax
+ * @version 1.1.1
+ * @date 2025-9-24
+ * @module ProductController
+ */
+
 import InventoryService from "../services/inventoryService.js";
 
+/**
+ * Controls all of the functionality for the product endpoints.
+ * @class
+ */
 class ProductController {
+    /**
+     * Gets all the product.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     */
     static async getAllProducts(req, res) {
         try {
             const products = await InventoryService.getAllProducts();
@@ -10,6 +28,12 @@ class ProductController {
         }
     }
 
+    /**
+     * Gets product by id.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async getProductByID(req, res) {
         try {
             const product = await InventoryService.getProductById(req.params.id);
@@ -22,6 +46,12 @@ class ProductController {
         }
     }
 
+     /**
+     * Gets product by name.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async getProductByPartialName(req, res) {
         try {
             const { name } = req.query;
