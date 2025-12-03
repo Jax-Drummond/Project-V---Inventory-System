@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/controllers/orderController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/controllers/orderController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file orderController.js
+ * @description All the routes functionality for the order.
+ * @author Owen, Jax
+ * @version 1.1.2
+ * @date 2025-10-19
+ * @module OrderController
+ */
+
+import InventoryService from "../services/inventoryService.js";
+
+/**
+ * Controls all of the functionality for the order endpoints.
+ * @class
+ */
+class OrderController {
+    /**
+     * Gets all the order.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     */
+    static async getAllOrders(req, res) {
+        try {
+            const order = await InventoryService.getAllOrders();
+            res.status(200).json(order);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    /**
+     * Gets order by id.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
+    static async getOrderByID(req, res) {
+        try {
+            const order = await InventoryService.getOrderById(req.params.id);
+            if (!order) {
+                return res.status(404).json({ message: "Order not found." });
+            }
+            res.status(200).json(order);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    /**
+     * Creates a new order.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
+    static async createOrder(req, res) {
+        try {
+            const { qty, cost, status, stockId } = req.body;
+
+            // Validate stock existence via service
+            const stock = await InventoryService.getStockById(stockId);
+            if (!stock) {
+                return res.status(404).json({ message: "Stock not found" });
+            }
+
+            const newOrder = await InventoryService.createOrder({ qty, cost, status, stockId });
+
+            res.status(201).json(newOrder);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    /**
+     * Updates an order.
+     * @param {object} req The request.
+     * @param {object} res The Response.
+     * @returns A response.
+     */
+    static async updateOrderStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            if (!status) {
+                return res.status(400).json({ message: "Missing new status." });
+            }
+
+            const updatedOrder = await InventoryService.updateOrderStatus(id, status);
+
+            if (!updatedOrder) {
+                return res.status(404).json({ message: "Order not found." });
+            }
+
+            res.status(200).json({
+                message: "Order status updated successfully.",
+                order: updatedOrder
+            });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    /**
+     * Deletes an order.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
+    static async deleteOrder(req, res) {
+        try {
+            const { id } = req.params;
+            const success = await InventoryService.deleteOrder(id);
+
+            if (!success) {
+                return res.status(404).json({ message: "Order not found." });
+            }
+
+            res.status(200).json({ message: "Order deleted successfully." });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+}
+
+export default OrderController;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-DashboardController.html">DashboardController</a></li><li><a href="module-EquipmentController.html">EquipmentController</a></li><li><a href="module-InventoryService.html">InventoryService</a></li><li><a href="module-OrderController.html">OrderController</a></li><li><a href="module-ProductController.html">ProductController</a></li><li><a href="module-StockController.html">StockController</a></li><li><a href="module-app.html">app</a></li><li><a href="module-routes_dashboard.html">routes/dashboard</a></li><li><a href="module-routes_equipment.html">routes/equipment</a></li><li><a href="module-routes_orders.html">routes/orders</a></li><li><a href="module-routes_product.html">routes/product</a></li><li><a href="module-routes_stock.html">routes/stock</a></li><li><a href="module-server.html">server</a></li></ul><h3>Classes</h3><ul><li><a href="module-DashboardController-DashboardController.html">DashboardController</a></li><li><a href="module-EquipmentController-EquipmentController.html">EquipmentController</a></li><li><a href="module-InventoryService-InventoryService.html">InventoryService</a></li><li><a href="module-OrderController-OrderController.html">OrderController</a></li><li><a href="module-ProductController-ProductController.html">ProductController</a></li><li><a href="module-StockController-StockController.html">StockController</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 03 2025 09:14:59 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

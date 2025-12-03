@@ -1,10 +1,10 @@
 /**
  * @file server.js
- * @description Acts as the entry point of the
+ * @description Acts as the entry point of the server.
  * @author Jax
  * @version 1.0.0
  * @date 2025-9-24
- * @module app
+ * @module server
  */
 
 import app from "./app.js"
