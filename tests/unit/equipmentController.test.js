@@ -1,7 +1,7 @@
 //equipment Controller Tests
 import { jest } from "@jest/globals";
-import EquipmentController from "../src/controllers/equipmentController.js";
-import InventoryService from "../src/services/inventoryService.js";
+import EquipmentController from "../../src/controllers/equipmentController.js";
+import InventoryService from "../../src/services/inventoryService.js";
 
 // Mock response helper
 function createMockResponse() {

@@ -1,8 +1,8 @@
 //Stock Controller Tests
 
 import { describe, expect, jest } from "@jest/globals";
-import StockController from "../src/controllers/stockController.js";
-import InventoryService from "../src/services/inventoryService.js";
+import StockController from "../../src/controllers/stockController.js";
+import InventoryService from "../../src/services/inventoryService.js";
 
 // Mock response helper
 function createMockResponse() {
