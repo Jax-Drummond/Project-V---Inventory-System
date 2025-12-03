@@ -104,6 +104,7 @@ class InventoryApp {
             tableHead: document.getElementById('table-head'),
             tableBody: document.getElementById('table-body'),
             searchInput: document.getElementById('search-input'),
+            btnCreate: document.getElementById('btn-create'), // Added btnCreate
             modal: document.getElementById('modal-overlay'),
             modalContent: document.getElementById('modal-content'),
             modalFields: document.getElementById('modal-fields'),
@@ -132,11 +133,14 @@ class InventoryApp {
 
     init() {
         this.renderNav();
+        this.updateCreateButton(); // Initial check
         this.loadData(this.currentType);
 
         // Event Listeners
         document.getElementById('btn-refresh').addEventListener('click', () => this.loadData(this.currentType));
-        document.getElementById('btn-create').addEventListener('click', () => alert("Feature not yet implemented."));
+        if (this.els.btnCreate) {
+             this.els.btnCreate.addEventListener('click', () => alert("Feature not yet implemented."));
+        }
 
         this.els.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
 
@@ -166,7 +170,21 @@ class InventoryApp {
     switchType(type) {
         this.currentType = type;
         this.renderNav();
+        this.updateCreateButton(); // Update button visibility on switch
         this.loadData(type);
+    }
+
+    updateCreateButton() {
+        if (!this.els.btnCreate) return;
+        
+        // Show button only for Products and Orders
+        const allowedTypes = ['products', 'orders'];
+        
+        if (allowedTypes.includes(this.currentType)) {
+            this.els.btnCreate.classList.remove('hidden');
+        } else {
+            this.els.btnCreate.classList.add('hidden');
+        }
     }
 
     async loadData(type) {
@@ -291,6 +309,33 @@ class InventoryApp {
 
             const val = this.getNestedValue(item, col.key);
 
+            // Handle Dropdowns for Status fields
+            if (col.type === 'status') {
+                let options = [];
+                // Define options based on the section
+                if (this.currentType === 'orders') {
+                    options = ['Pending', 'Shipped', 'Received'];
+                } else if (this.currentType === 'equipment') {
+                    options = ['Available', 'In Use', 'Damaged'];
+                } else {
+                    // Fallback
+                    options = [val];
+                }
+
+                return `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">${col.label}</label>
+                        <select name="${col.key}"
+                                class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none transition-colors">
+                            ${options.map(opt => `
+                                <option value="${opt}" ${String(val).toLowerCase() === opt.toLowerCase() ? 'selected' : ''}>${opt}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+
+            // Standard Input for other fields
             return `
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1">${col.label}</label>
