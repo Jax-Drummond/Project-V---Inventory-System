@@ -127,8 +127,8 @@ describe("Product Routes", () => {
       const res = await request(app).get("/api/products/search/").query({ name: "NonExistentProduct" }); 
 
         expect(InventoryService.getProductsByName).toHaveBeenCalledWith("NonExistentProduct");
-        expect(res.status).toBe(200);
-        expect(res.body).toEqual([]);
+        expect(res.status).toBe(404);
+        expect(res.body).toEqual({message: "Product not found."});
     });
 
     it("should handle errors and return status 500", async () => {
