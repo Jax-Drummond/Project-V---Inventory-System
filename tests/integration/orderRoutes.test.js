@@ -116,7 +116,7 @@ describe("Order Routes", () => {
                 status: "pending",
                 stockId: 1
             };
-            mockStock = {
+            const mockStock = {
                 id: 1,
                 qty: 10,
                 threshold: 5,
