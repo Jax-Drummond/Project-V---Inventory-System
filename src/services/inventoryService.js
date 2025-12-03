@@ -119,15 +119,40 @@ class InventoryService {
         id = stock.id
 
         const payload = {
-            productid: data.productId,
+            productid: stock.productId,
             qty: data.qty,
             restock: data.threshold
         };
 
-        await this._fetch(`inventory/product-stock/${id}`, {
+        await this._fetch(`inventory/product-stock/${stock.productId}`, {
             method: 'PATCH',
             body: JSON.stringify(payload)
         });
+
+        if (data && parseInt(data.qty) <= parseInt(data.threshold)) {
+
+            const allOrders = await this.getAllOrders();
+            const hasPendingOrder = allOrders.some(o =>
+                o.productId === stock.productId && o.status.toLowerCase() !== 'received'
+            );
+
+            if (!hasPendingOrder)
+            {
+                console.log(`[Auto-Restock] Stock for Product ID ${stock.productId} is low (${data.qty} <= ${data.threshold}). Creating order...`);
+
+                // Calculate a reorder amount
+                const reorderQty = data.threshold > 0 ? data.threshold * 2 : 20;
+
+                await this.createOrder({
+                    productId: stock.productId,
+                    qty: reorderQty,
+                    status: 'Pending' // Maps to suppliername in createOrder
+                });
+            }else
+            {
+                console.log(`[Auto-Restock] Pending order already exists for Product ID ${stock.productId}. Skipping creation.`);
+            }
+        }
 
         return this.getStockById(id);
     }
@@ -176,7 +201,8 @@ class InventoryService {
             productid: data.productId || (data.Stock ? data.Stock.productId : null),
             qty: data.qty,
             suppliername: data.status,
-            ordered: new Date().toISOString().slice(0, 10)
+            ordered: new Date().toISOString().slice(0, 10),
+            received: "0-0-0"
         };
 
         const res = await this._fetch('inventory/stock-order', {

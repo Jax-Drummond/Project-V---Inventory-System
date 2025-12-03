@@ -280,7 +280,6 @@ class InventoryApp {
 
     openModal(id) {
         const item = this.currentData.find(d => d.id === id);
-        console.log(id)
         if (!item) return;
 
         const config = RESOURCE_CONFIG[this.currentType];
@@ -316,7 +315,6 @@ class InventoryApp {
     async handleSave(e) {
         e.preventDefault();
         const id = this.els.editId.value;
-        console.log(id)
         const formData = new FormData(this.els.editForm);
         const data = Object.fromEntries(formData.entries());
 
