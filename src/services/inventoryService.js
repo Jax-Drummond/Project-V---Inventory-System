@@ -170,9 +170,7 @@ class InventoryService {
      * @returns The new updated stock.
      */
     static async updateStock(id, data) {
-        // Remove later -- Database logic messed up
-        const stock = await this.getStockByProductId(id)
-        id = stock.id
+        const stock = await this.getStockById(id)
 
         const payload = {
             productid: stock.productId,
@@ -180,6 +178,7 @@ class InventoryService {
             restock: data.threshold
         };
 
+        // We send the productId because database is using productId in query.
         await this._fetch(`inventory/product-stock/${stock.productId}`, {
             method: 'PATCH',
             body: JSON.stringify(payload)
@@ -295,6 +294,28 @@ class InventoryService {
      * @returns The new updated order.
      */
     static async updateOrderStatus(id, status) {
+
+        if (status.toLowerCase() === 'received') {
+            const order = await this.getOrderById(id);
+            // Ensure order exists and wasn't already received to avoid double counting
+            if (order && order.status.toLowerCase() !== 'received') {
+                const stock = await this.getStockById(order.stockId);
+
+                if (stock) {
+                    const newQty = parseInt(stock.qty) + parseInt(order.qty);
+                    console.log(`[Auto-Update] Receiving Order ${id}. Updating Stock for Product ${order.productId}: ${stock.qty} -> ${newQty}`);
+
+                    // Call updateStock (Note: current implementation expects ProductID as first arg)
+                    await this.updateStock(order.stockId, {
+                        productId: order.productId,
+                        qty: newQty,
+                        threshold: stock.threshold
+                    });
+                } else {
+                    console.warn(`[Auto-Update] Could not find stock for Product ${order.productId} to update quantity.`);
+                }
+            }
+        }
         await this._fetch(`inventory/stock-order/${id}`, {
             method: 'PATCH',
             body: JSON.stringify({
