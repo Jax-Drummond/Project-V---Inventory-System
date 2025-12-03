@@ -1,8 +1,8 @@
 // Order Controller Tests
 
 import { jest } from "@jest/globals";
-import OrderController from "../src/controllers/orderController.js";
-import InventoryService from "../src/services/inventoryService.js";
+import OrderController from "../../src/controllers/orderController.js";
+import InventoryService from "../../src/services/inventoryService.js";
 
 // Mock response helper
 function createMockResponse() {

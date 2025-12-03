@@ -1,6 +1,8 @@
+//Product Controller Tests
+
 import { jest } from "@jest/globals";
-import ProductController from "../src/controllers/productController.js";
-import InventoryService from "../src/services/inventoryService.js";
+import ProductController from "../../src/controllers/productController.js";
+import InventoryService from "../../src/services/inventoryService.js";
 
 // Mock response helper
 function createMockResponse() {
