@@ -14,6 +14,17 @@ class ApiClient {
         return await res.json();
     }
 
+    async post(endpoint, data) {
+        const res = await fetch(`${this.baseUrl}/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        console.log(res)
+        if (!res.ok) throw new Error(`Creation Failed: ${res.statusText}`);
+        return await res.json();
+    }
+
     async put(endpoint, id, data) {
         const res = await fetch(`${this.baseUrl}/${endpoint}/${id}`, {
             method: 'PUT',
@@ -47,11 +58,12 @@ const RESOURCE_CONFIG = {
         label: 'Products',
         columns: [
             { key: 'id', label: 'ID', type: 'text', editable: false },
-            { key: 'name', label: 'Name', type: 'text', editable: false },
-            { key: 'price', label: 'Price', type: 'currency', editable: false },
-            { key: 'description', label: 'Description', type: 'text', editable: false }
+            { key: 'name', label: 'Name', type: 'text', editable: true, required: true },
+            { key: 'price', label: 'Price', type: 'currency', editable: true, required: true, isNewField: true }, // Added isNewField for creation form
+            { key: 'description', label: 'Description', type: 'text', editable: true, isNewField: true }
         ],
-        endpoint: 'products'
+        endpoint: 'products',
+        canCreate: true
     },
     stock: {
         label: 'Stock',
@@ -67,13 +79,14 @@ const RESOURCE_CONFIG = {
         label: 'Orders',
         columns: [
             { key: 'id', label: 'Order ID', type: 'text', editable: false },
-            { key: 'stockId', label: 'Stock ID', type: 'text', editable: false },
+            { key: 'stockId', label: 'Stock ID', type: 'text', editable: false, isNewField: true }, // Not editable, but needed for creation
             { key: 'date', label: 'Ordered Date', type: 'date', editable: false },
-            { key: 'status', label: 'Status', type: 'status', editable: true },
+            { key: 'status', label: 'Status', type: 'status', editable: true, isNewField: true }, // Editable, and needed for creation
             { key: 'cost', label: 'Total Cost', type: 'currency', editable: false },
-            { key: 'qty', label: 'Items', type: 'number', editable: false }
+            { key: 'qty', label: 'Items', type: 'number', editable: false, isNewField: true } // Not editable, but needed for creation
         ],
-        endpoint: 'orders'
+        endpoint: 'orders',
+        canCreate: true
     },
     equipment: {
         label: 'Equipment',
@@ -97,6 +110,7 @@ class InventoryApp {
         this.currentType = 'overview'; // start on Overview
         this.currentData = [];
         this.revenueChart = null; // Chart.js instance
+        this.isCreating = false; // New state to track if we are in create mode
 
         // Cache DOM elements we need
         this.els = {
@@ -104,10 +118,11 @@ class InventoryApp {
             tableHead: document.getElementById('table-head'),
             tableBody: document.getElementById('table-body'),
             searchInput: document.getElementById('search-input'),
-            btnCreate: document.getElementById('btn-create'), // Added btnCreate
+            btnCreate: document.getElementById('btn-create'),
             modal: document.getElementById('modal-overlay'),
             modalContent: document.getElementById('modal-content'),
             modalFields: document.getElementById('modal-fields'),
+            modalTitle: document.getElementById('modal-title'), // New element
             editForm: document.getElementById('edit-form'),
             editId: document.getElementById('edit-id'),
             emptyState: document.getElementById('empty-state'),
@@ -139,7 +154,8 @@ class InventoryApp {
         // Event Listeners
         document.getElementById('btn-refresh').addEventListener('click', () => this.loadData(this.currentType));
         if (this.els.btnCreate) {
-             this.els.btnCreate.addEventListener('click', () => alert("Feature not yet implemented."));
+             // Change button listener to open modal for creation
+             this.els.btnCreate.addEventListener('click', () => this.openCreateModal(this.currentType));
         }
 
         this.els.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
@@ -177,10 +193,10 @@ class InventoryApp {
     updateCreateButton() {
         if (!this.els.btnCreate) return;
         
-        // Show button only for Products and Orders
-        const allowedTypes = ['products', 'orders'];
+        // Show button only for types with canCreate: true
+        const config = RESOURCE_CONFIG[this.currentType];
         
-        if (allowedTypes.includes(this.currentType)) {
+        if (config && config.canCreate) {
             this.els.btnCreate.classList.remove('hidden');
         } else {
             this.els.btnCreate.classList.add('hidden');
@@ -263,7 +279,7 @@ class InventoryApp {
 
                 ${this.currentType != "products" && this.currentType != "equipment" ? 
     `<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        <button onclick="app.openModal(${item.id})" class="text-green-400 hover:text-green-300 mr-3">Edit</button>
+        <button onclick="app.openEditModal(${item.id})" class="text-green-400 hover:text-green-300 mr-3">Edit</button>
         
         ${this.currentType  == "stock" ? 
             `<button onclick="app.deleteEntry(${item.id})" class="text-red-400 hover:text-red-300">Delete</button>` 
@@ -296,82 +312,163 @@ class InventoryApp {
         this.renderTable(filtered);
     }
 
-    openModal(id) {
+    /**
+     * Opens the modal for editing an existing entry.
+     */
+    openEditModal(id) {
+        this.isCreating = false; // Set mode to edit
         const item = this.currentData.find(d => d.id === id);
         if (!item) return;
 
         const config = RESOURCE_CONFIG[this.currentType];
         this.els.editId.value = id;
+        this.els.modalTitle.textContent = `Edit ${config.label} Entry`;
 
-        // Generate Form Fields
+        // Generate Form Fields - only for editable fields
         this.els.modalFields.innerHTML = config.columns.map(col => {
             if (!col.editable) return ''; // Skip non-editable fields
 
             const val = this.getNestedValue(item, col.key);
 
-            // Handle Dropdowns for Status fields
-            if (col.type === 'status') {
-                let options = [];
-                // Define options based on the section
-                if (this.currentType === 'orders') {
-                    options = ['Pending', 'Shipped', 'Received'];
-                } else if (this.currentType === 'equipment') {
-                    options = ['Available', 'In Use', 'Damaged'];
-                } else {
-                    // Fallback
-                    options = [val];
-                }
-
-                return `
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">${col.label}</label>
-                        <select name="${col.key}"
-                                class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none transition-colors">
-                            ${options.map(opt => `
-                                <option value="${opt}" ${String(val).toLowerCase() === opt.toLowerCase() ? 'selected' : ''}>${opt}</option>
-                            `).join('')}
-                        </select>
-                    </div>
-                `;
-            }
-
-            // Standard Input for other fields
-            return `
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-1">${col.label}</label>
-                    <input type="${col.type === 'number' ? 'number' : 'text'}"
-                           name="${col.key}"
-                           value="${val || ''}"
-                           class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none transition-colors"
-                    >
-                </div>
-            `;
+            return this.renderFormField(col, val);
         }).join('');
 
         this.els.modal.classList.remove('hidden');
         setTimeout(() => this.els.modal.classList.remove('opacity-0'), 10); // Fade in
     }
 
+    /**
+     * Opens the modal for creating a new entry.
+     */
+    openCreateModal(type) {
+        this.isCreating = true; // Set mode to create
+        const config = RESOURCE_CONFIG[type];
+        this.els.editId.value = ''; // Clear ID for creation
+        this.els.modalTitle.textContent = `Create New ${config.label}`;
+
+        // Generate Form Fields - for all relevant creation fields
+        this.els.modalFields.innerHTML = config.columns.map(col => {
+            // Include fields that are 'editable' OR marked as 'isNewField'
+            if (!col.editable && !col.isNewField) return '';
+            
+            // For creation, the initial value is always empty/default
+            return this.renderFormField(col, '', true);
+        }).join('');
+
+        this.els.modal.classList.remove('hidden');
+        setTimeout(() => this.els.modal.classList.remove('opacity-0'), 10); // Fade in
+    }
+
+    /**
+     * Helper to render a single form field (used by both create and edit)
+     */
+    renderFormField(col, val, isCreation = false) {
+        // Handle Dropdowns for Status fields
+        if (col.type === 'status') {
+            let options = [];
+            // Define options based on the section
+            if (this.currentType === 'orders') {
+                options = ['Pending', 'Shipped', 'Received'];
+            } else if (this.currentType === 'equipment') {
+                options = ['Available', 'In Use', 'Damaged'];
+            } else {
+                // Fallback (only relevant for editing, not creation where status is defined)
+                options = [val];
+            }
+
+            const selectedVal = isCreation ? (col.key === 'status' && this.currentType === 'orders' ? 'Pending' : val) : val;
+
+            return `
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">${col.label}</label>
+                    <select name="${col.key}"
+                            class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none transition-colors">
+                        ${options.map(opt => `
+                            <option value="${opt}" ${String(selectedVal).toLowerCase() === opt.toLowerCase() ? 'selected' : ''}>${opt}</option>
+                        `).join('')}
+                    </select>
+                </div>
+            `;
+        }
+        
+        // Standard Input for other fields
+        // Special case for 'currency' type in creation, use 'number' input type
+        const inputType = col.type === 'number' || (col.type === 'currency' && isCreation) ? 'number' : 'text';
+        const requiredAttr = col.required ? 'required' : '';
+        const stepAttr = inputType === 'number' && col.type === 'currency' ? 'step="0.01"' : '';
+
+        return `
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-1">${col.label}</label>
+                <input type="${inputType}"
+                       name="${col.key}"
+                       value="${val || ''}"
+                       ${requiredAttr}
+                       ${stepAttr}
+                       class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none transition-colors"
+                >
+            </div>
+        `;
+    }
+
     closeModal() {
         this.els.modal.classList.add('opacity-0');
         setTimeout(() => this.els.modal.classList.add('hidden'), 300); // Wait for transition
+        this.isCreating = false; // Reset state
     }
 
     async handleSave(e) {
         e.preventDefault();
-        const id = this.els.editId.value;
         const formData = new FormData(this.els.editForm);
         const data = Object.fromEntries(formData.entries());
+        const config = RESOURCE_CONFIG[this.currentType];
 
         try {
-            const config = RESOURCE_CONFIG[this.currentType];
-            await this.api.put(config.endpoint, id, data);
-            this.showToast('Entry updated successfully', 'success');
-            this.closeModal();
-            this.loadData(this.currentType);
+            if (this.isCreating) {
+                let response;
+
+                if (this.currentType === 'products') {
+                    const payload = {
+                        name: data.name,
+                        price: parseFloat(data.price),
+                        description: data.description || 'N/A'
+                    };
+
+                    response = await this.api.post(config.endpoint, payload);
+
+                } else if (this.currentType === 'orders') {
+                    const payload = {
+                        stockId: data.stockId, // Mapped to productId in inventoryService.js
+                        qty: parseInt(data.qty),
+                        status: data.status // Mapped to suppliername in inventoryService.js
+                    };
+
+                    response = await this.api.post(config.endpoint, payload);
+                } else {
+                    // Should not happen for types with canCreate=true
+                    throw new Error('Creation not supported for this type.');
+                }
+
+                if (response) {
+                    this.showToast(`${config.label} created successfully`, 'success');
+                    this.closeModal();
+                    this.loadData(this.currentType);
+                } else {
+                    throw new Error('Failed to create entry.');
+                }
+
+            } else {
+                // Handle Edit (PUT)
+                const id = this.els.editId.value;
+                await this.api.put(config.endpoint, id, data);
+                this.showToast('Entry updated successfully', 'success');
+                this.closeModal();
+                this.loadData(this.currentType);
+            }
         } catch (error) {
             console.error(error);
-            this.showToast('Failed to update entry', 'error');
+            const msg = error.message || 'An unknown error occurred.';
+            this.showToast(`Operation Failed: ${msg}`, 'error');
         }
     }
 

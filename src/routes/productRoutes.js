@@ -21,6 +21,15 @@ const router = express.Router()
  */
 router.get("/", ProductController.getAllProducts);
 
+
+/**
+ * Creates a product.
+ * @name Create a Product
+ * @route {POST} /api/products
+ * @summary Create a product.
+ */
+router.post("/", ProductController.createProduct);
+
 /**
  * Searches for products using a partial name match.
  * @name Search Products

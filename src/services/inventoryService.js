@@ -79,6 +79,38 @@ class InventoryService {
     }
 
     /**
+     * Creates a new product.
+     * @param {object} data The data of the new product you want to create.
+     * @returns The response.
+     */
+    static async createProduct(data) {
+        console.log(data)
+        const payload = {
+            name: data.name,
+            price: data.price,
+            description: data.description
+        };
+        console.log(payload)
+        const response = await this._fetch('inventory/product', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (response && response.ProductID) {
+            // Also create a default stock entry for the new product
+            await this.createStock({
+                productId: response.ProductID,
+                qty: 15,
+                threshold: 10
+            });
+            console.log(`[Auto-Create] Created default stock for new Product ID ${response.ProductID}.`);
+        }
+
+        // The response usually contains the ID of the new entry
+        return response;
+    }
+
+    /**
      * Gets a product by it's ID.
      * @param {number} id The id of the product you want to find.
      * @returns The product.
@@ -148,7 +180,7 @@ class InventoryService {
      */
     static async createStock(data) {
         const payload = {
-            productId: data.productId,
+            productid: data.productId,
             qty: data.qty,
             restock: data.threshold,
             lastRestock: new Date().toISOString().slice(0, 19).replace('T', ' ')
@@ -271,8 +303,9 @@ class InventoryService {
      * @returns The response.
      */
     static async createOrder(data) {
+        console.log(data)
         const payload = {
-            productid: data.productId || (data.Stock ? data.Stock.productId : null),
+            productid: data.productId,
             qty: data.qty,
             suppliername: data.status,
             ordered: new Date().toISOString().slice(0, 10),

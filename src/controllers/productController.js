@@ -29,6 +29,30 @@ class ProductController {
     }
 
     /**
+     * Create a product
+     * @param {object} req The request.
+     * @param {object} res The response.
+     */
+    static async createProduct(req, res) {
+        try {
+            const { name, price, description } = req.body;
+
+            if (!name || !price || !description) {
+                return res.status(400).json({ message: "Missing Fields" });
+            }
+
+            const newProduct = await InventoryService.createProduct({ name, price, description });
+
+            res.status(201).json({
+                message: "Product Created",
+                product: newProduct
+            });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    /**
      * Gets product by id.
      * @param {object} req The request.
      * @param {object} res The response.

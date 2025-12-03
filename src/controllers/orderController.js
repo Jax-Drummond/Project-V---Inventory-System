@@ -54,15 +54,14 @@ class OrderController {
      */
     static async createOrder(req, res) {
         try {
-            const { qty, cost, status, stockId } = req.body;
-
+            const { productId, qty, status } = req.body;
             // Validate stock existence via service
-            const stock = await InventoryService.getStockById(stockId);
+            const stock = await InventoryService.getStockById(productId);
             if (!stock) {
                 return res.status(404).json({ message: "Stock not found" });
             }
-
-            const newOrder = await InventoryService.createOrder({ qty, cost, status, stockId });
+            
+            const newOrder = await InventoryService.createOrder({ productId: stock.productId, qty, status });
 
             res.status(201).json(newOrder);
         } catch (e) {
