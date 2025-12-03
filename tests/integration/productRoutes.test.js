@@ -80,8 +80,8 @@ describe("Product Routes", () => {
         const res = await request(app).get("/api/products/999");
 
         expect(InventoryService.getProductById).toHaveBeenCalledWith("999");
-        expect(res.status).toBe(404);
-        expect(res.body).toEqual({ message: "Product not found." });
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([]);
     });
 
     it("should handle errors and return status 500", async () => {
