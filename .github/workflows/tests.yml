@@ -7,7 +7,7 @@ on:
     branches: [main, inventory-backend]
 
 jobs:
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
 
 
@@ -28,5 +28,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Tests
-        run: npm test
+      - name: Run Product Unit Tests
+        run: npm test -- productController.test.js
+
+      - name: Run Stock Unit Tests
+        run: npm test -- stockController.test.js
+
+      - name: Run Orders Unit Tests
+        run: npm test -- orderController.test.js
+
+      - name: Run Equipment Unit Tests
+        run: npm test -- equipmentController.test.js
