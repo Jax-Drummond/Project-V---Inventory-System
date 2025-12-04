@@ -373,6 +373,25 @@ class InventoryService {
     }
 
     /**
+     * Gets all equipment.
+     * @returns An array of item-transactions json objects.
+     */
+    static async getAllItemTransactions() {
+        const data = await this._fetch('pos/item-transactions');
+        if (!data) return [];
+
+        console.log(data)
+
+        return data.map(it => ({
+            id: it.ItemTransactionID,
+            productId: e.ProductID,
+            qty: e.Quantity,
+            subtotal: e.Subtotal,
+            date: e.CreatedAt
+        }));
+    }
+
+    /**
      * Gets an equipment by it's ID.
      * @param {number} id the ID of the equipment you want to get.
      * @returns The equipment.
@@ -418,12 +437,14 @@ class InventoryService {
      * @returns Required Information.
      */
     static async getDashboardOverview() {
-        const [products, stocks, orders] = await Promise.all([
+        const [products, stocks, orders,itemTransactions] = await Promise.all([
             this.getAllProducts(),
             this.getAllStock(),
-            this.getAllOrders()
+            this.getAllOrders(),
+            this.getAllItemTransactions()
         ]);
 
+        // Top Bar
         const totalProducts = products.length;
         const totalStockItems = stocks.reduce((sum, s) => sum + s.qty, 0);
         const totalOrders = orders.length;
@@ -435,8 +456,13 @@ class InventoryService {
             return sum + (s.qty * price);
         }, 0);
 
+
+        // Bottom Data
         const now = new Date();
         const monthlyRevenue = [];
+
+
+
 
         for (let i = 11; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -444,12 +470,12 @@ class InventoryService {
             const month = d.getMonth();
             const label = d.toLocaleString('default', { month: 'short' });
 
-            const totalForMonth = orders
-                .filter(o => {
-                    const od = new Date(o.date);
-                    return od.getFullYear() === year && od.getMonth() === month;
+            const totalForMonth = itemTransactions
+                .filter(it => {
+                    const itd = new Date(it.date);
+                    return itd.getFullYear() === year && itd.getMonth() === month;
                 })
-                .reduce((sum, o) => sum + (o.cost || 0), 0);
+                .reduce((sum, it) => sum + (it.subtotal || 0), 0);
 
             monthlyRevenue.push({ month: label, total: totalForMonth });
         }
@@ -457,10 +483,10 @@ class InventoryService {
         const salesByProduct = new Map();
         products.forEach(p => salesByProduct.set(p.id, 0));
 
-        orders.forEach(order => {
-            const pid = order.productId;
+        itemTransactions.forEach(it => {
+            const pid = it.productId;
             const current = salesByProduct.get(pid) ?? 0;
-            salesByProduct.set(pid, current + (order.qty || 0));
+            salesByProduct.set(pid, current + (it.qty || 0));
         });
 
         const productSales = products.map(p => ({
