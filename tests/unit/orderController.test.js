@@ -132,9 +132,8 @@ describe("OrderController", () => {
             id: 1,
             qty: 5,
             date: "2024-01-01",
-            cost: 150.00,
             status: "Pending",
-            stockId: 2
+            productId: 2
         };
 
         jest
@@ -144,13 +143,13 @@ describe("OrderController", () => {
             .spyOn(InventoryService, "createOrder")
             .mockResolvedValue(mockNewOrder);
 
-        const req = { body: { qty: 5, cost: 150.00, status: "Pending", stockId: 2 } };
+        const req = { body: { qty: 5, status: "Pending", productId: 2 } };
         const res = createMockResponse();
 
         await OrderController.createOrder(req, res);
 
         expect(InventoryService.getStockById).toHaveBeenCalledWith(2);
-        expect(InventoryService.createOrder).toHaveBeenCalledWith({ qty: 5, cost: 150.00, status: "Pending", stockId: 2 });
+        expect(InventoryService.createOrder).toHaveBeenCalledWith({ qty: 5, status: "Pending" });
         expect(res.status).toHaveBeenCalledWith(201);
         expect(res.json).toHaveBeenCalledWith(mockNewOrder);
     });
@@ -160,7 +159,7 @@ describe("OrderController", () => {
             .spyOn(InventoryService, "getStockById")
             .mockResolvedValue(null);
 
-        const req = { body: { qty: 5, cost: 150.00, status: "Pending", stockId: 999 } };
+        const req = { body: { qty: 5, status: "Pending", productId: 999 } };
         const res = createMockResponse();
 
         await OrderController.createOrder(req, res);
@@ -176,7 +175,7 @@ describe("OrderController", () => {
             .spyOn(InventoryService, "getStockById")
             .mockRejectedValue(error);
 
-        const req = { body: { qty: 5, cost: 150.00, status: "Pending", stockId: 2 } };
+        const req = { body: { qty: 5, status: "Pending", productId: 2 } };
         const res = createMockResponse();
 
         await OrderController.createOrder(req, res);
@@ -192,9 +191,8 @@ describe("OrderController", () => {
             id: 1,
             qty: 5,
             date: "2024-01-01",
-            cost: 150.00,
             status: "Shipped",
-            stockId: 2
+            productId: 2
         };
         jest
             .spyOn(InventoryService, "updateOrderStatus")
