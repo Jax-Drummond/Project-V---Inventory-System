@@ -8,7 +8,7 @@
  */
 
 import fetch from "node-fetch";
-const BASE_URL = "http://projectv.space:3000/api/";
+const BASE_URL = "http://projectv.store:3000/api/";
 
 /**
  * Is essentially an adapter to communicate with the database's backend
