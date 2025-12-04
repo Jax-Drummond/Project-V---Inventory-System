@@ -1,6 +1,6 @@
 //Product Controller Tests
 
-import { jest } from "@jest/globals";
+import { describe, jest } from "@jest/globals";
 import ProductController from "../../src/controllers/productController.js";
 import InventoryService from "../../src/services/inventoryService.js";
 
@@ -172,6 +172,122 @@ describe("ProductController", () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: "Database error" });
+    });
+  });
+  //createProduct tests
+
+  describe("createProduct", () => {
+    it("should create a product successfully with status 201", async () => {
+      const mockProduct = {
+        id: 1,
+        name: "Test Product",
+        price: 99.99,
+        description: "A test product",
+      };
+
+      jest
+        .spyOn(InventoryService, "createProduct")
+        .mockResolvedValue(mockProduct);
+
+      const req = {
+        body: {
+          name: "Test Product",
+          price: 99.99,
+          description: "A test product",
+        },
+      };
+      const res = createMockResponse();
+
+      await ProductController.createProduct(req, res);
+
+      expect(InventoryService.createProduct).toHaveBeenCalledWith({
+        name: "Test Product",
+        price: 99.99,
+        description: "A test product",
+      });
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Product Created",
+        product: mockProduct,
+      });
+    });
+
+    it("should return 400 if name is missing", async () => {
+      const req = {
+        body: {
+          price: 99.99,
+          description: "A test product",
+        },
+      };
+      const res = createMockResponse();
+
+      await ProductController.createProduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Missing Fields" });
+    });
+
+    it("should return 400 if price is missing", async () => {
+      const req = {
+        body: {
+          name: "Test Product",
+          description: "A test product",
+        },
+      };
+      const res = createMockResponse();
+
+      await ProductController.createProduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Missing Fields" });
+    });
+
+    it("should return 400 if description is missing", async () => {
+      const req = {
+        body: {
+          name: "Test Product",
+          price: 99.99,
+        },
+      };
+      const res = createMockResponse();
+
+      await ProductController.createProduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Missing Fields" });
+    });
+
+    it("should return 400 if all fields are missing", async () => {
+      const req = {
+        body: {},
+      };
+      const res = createMockResponse();
+
+      await ProductController.createProduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Missing Fields" });
+    });
+
+    it("should handle database errors and return status 500", async () => {
+      const error = new Error("Database connection failed");
+      jest
+        .spyOn(InventoryService, "createProduct")
+        .mockRejectedValue(error);
+
+      const req = {
+        body: {
+          name: "Test Product",
+          price: 99.99,
+          description: "A test product",
+        },
+      };
+      const res = createMockResponse();
+
+      await ProductController.createProduct(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Database connection failed" });
     });
   });
 });

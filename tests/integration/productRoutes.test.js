@@ -143,6 +143,110 @@ describe("Product Routes", () => {
         expect(res.status).toBe(500);
         expect(res.body).toEqual({ error: error.message });
     });
+
+    //POST /api/products/ Tests
+    describe("POST /api/products", () => {
+      it("should create a product successfully with status 201", async () => {
+        const newProduct = {
+          id: 1,
+          name: "New Product",
+          price: 99.99,
+          description: "A new product description",
+        };
+
+        jest
+          .spyOn(InventoryService, "createProduct")
+          .mockResolvedValue(newProduct);
+
+        const res = await request(app)
+          .post("/api/products")
+          .send({
+            name: "New Product",
+            price: 99.99,
+            description: "A new product description",
+          });
+
+        expect(InventoryService.createProduct).toHaveBeenCalledWith({
+          name: "New Product",
+          price: 99.99,
+          description: "A new product description",
+        });
+        expect(res.status).toBe(201);
+        expect(res.body).toEqual({
+          message: "Product Created",
+          product: newProduct,
+        });
+      });
+
+      it("should return 400 if name is missing", async () => {
+        const res = await request(app)
+          .post("/api/products")
+          .send({
+            price: 99.99,
+            description: "A new product description",
+          });
+
+        expect(res.status).toBe(400);
+        expect(res.body).toEqual({ message: "Missing Fields" });
+      });
+
+      it("should return 400 if price is missing", async () => {
+        const res = await request(app)
+          .post("/api/products")
+          .send({
+            name: "New Product",
+            description: "A new product description",
+          });
+
+        expect(res.status).toBe(400);
+        expect(res.body).toEqual({ message: "Missing Fields" });
+      });
+
+      it("should return 400 if description is missing", async () => {
+        const res = await request(app)
+          .post("/api/products")
+          .send({
+            name: "New Product",
+            price: 99.99,
+          });
+
+        expect(res.status).toBe(400);
+        expect(res.body).toEqual({ message: "Missing Fields" });
+      });
+
+      it("should return 400 if request body is empty", async () => {
+        const res = await request(app)
+          .post("/api/products")
+          .send({});
+
+        expect(res.status).toBe(400);
+        expect(res.body).toEqual({ message: "Missing Fields" });
+      });
+
+      it("should handle database errors and return status 500", async () => {
+        const error = new Error("Database connection failed");
+        jest
+          .spyOn(InventoryService, "createProduct")
+          .mockRejectedValue(error);
+
+        const res = await request(app)
+          .post("/api/products")
+          .send({
+            name: "New Product",
+            price: 99.99,
+            description: "A new product description",
+          });
+
+        expect(InventoryService.createProduct).toHaveBeenCalledWith({
+          name: "New Product",
+          price: 99.99,
+          description: "A new product description",
+        });
+        expect(res.status).toBe(500);
+        expect(res.body).toEqual({ error: "Database connection failed" });
+      });
+    });
+    
     });
 });
 }); 
