@@ -76,5 +76,5 @@ jobs:
       - name: Run Order Integration Tests
         run: npm test -- orderRoutes.test.js
 
-     # - name: Run Equipment Integration Tests
-      #  run: npm test -- equipmentRoutes.test.js
+      - name: Run Equipment Integration Tests
+        run: npm test -- equipmentRoutes.test.js
