@@ -210,7 +210,7 @@ describe("EquipmentController", () => {
         
         expect(InventoryService.updateEquipmentStatus).toHaveBeenCalledWith("999", { status: "In Use" });
         expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.json).toHaveBeenCalledWith({ message: "Stock not found." });
+        expect(res.json).toHaveBeenCalledWith({ message: "Equipment not found." });
     });
     it("should handle errors and return status 500", async () => {
       const error = new Error("Database error");
