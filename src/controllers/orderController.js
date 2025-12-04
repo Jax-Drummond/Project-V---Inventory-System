@@ -1,6 +1,24 @@
+/**
+ * @file orderController.js
+ * @description All the routes functionality for the order.
+ * @author Owen, Jax
+ * @version 1.1.2
+ * @date 2025-10-19
+ * @module OrderController
+ */
+
 import InventoryService from "../services/inventoryService.js";
 
+/**
+ * Controls all of the functionality for the order endpoints.
+ * @class
+ */
 class OrderController {
+    /**
+     * Gets all the order.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     */
     static async getAllOrders(req, res) {
         try {
             const order = await InventoryService.getAllOrders();
@@ -10,6 +28,12 @@ class OrderController {
         }
     }
 
+    /**
+     * Gets order by id.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async getOrderByID(req, res) {
         try {
             const order = await InventoryService.getOrderById(req.params.id);
@@ -22,17 +46,22 @@ class OrderController {
         }
     }
 
+    /**
+     * Creates a new order.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async createOrder(req, res) {
         try {
-            const { qty, cost, status, stockId } = req.body;
-
+            const { productId, qty, status } = req.body;
             // Validate stock existence via service
-            const stock = await InventoryService.getStockById(stockId);
+            const stock = await InventoryService.getStockById(productId);
             if (!stock) {
                 return res.status(404).json({ message: "Stock not found" });
             }
 
-            const newOrder = await InventoryService.createOrder({ qty, cost, status, stockId });
+            const newOrder = await InventoryService.createOrder({ productId: stock.productId, qty, status });
 
             res.status(201).json(newOrder);
         } catch (e) {
@@ -40,6 +69,12 @@ class OrderController {
         }
     }
 
+    /**
+     * Updates an order.
+     * @param {object} req The request.
+     * @param {object} res The Response.
+     * @returns A response.
+     */
     static async updateOrderStatus(req, res) {
         try {
             const { id } = req.params;
@@ -64,6 +99,12 @@ class OrderController {
         }
     }
 
+    /**
+     * Deletes an order.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async deleteOrder(req, res) {
         try {
             const { id } = req.params;

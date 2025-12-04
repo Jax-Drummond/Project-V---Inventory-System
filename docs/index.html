@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>🧭 Inventory System Backend</h1>
+<p>A modular <strong>Node.js + Express</strong> backend providing RESTful APIs for managing inventory data including products, stock, equipment, and orders.</p>
+<hr>
+<h2>🚀 Features</h2>
+<ul>
+<li>
+<p>REST API for managing:</p>
+<ul>
+<li>🛒 Products</li>
+<li>📦 Stock</li>
+<li>⚙️ Equipment</li>
+<li>📑 Orders</li>
+</ul>
+</li>
+<li>
+<p>JSON request/response format</p>
+</li>
+<li>
+<p>Modular structure with clear separation of routes, controllers, and models</p>
+</li>
+<li>
+<p>Database-ready configuration setup</p>
+</li>
+</ul>
+<hr>
+<h2>📦 Requirements</h2>
+<ul>
+<li><a href="https://nodejs.org/en/download">Node.js</a> <strong>&gt;= 18</strong></li>
+<li>npm (comes with Node)</li>
+</ul>
+<hr>
+<h2>📂 File Structure</h2>
+<pre class="prettyprint source lang-bash"><code>inventory-system/
+├── /public
+│   ├── /scripts           # Client-side JS
+│   ├── /styles            # CSS stylesheets
+│   └── index.html         # Root page
+├── /src
+│   ├── /service            # DB config, environment setup
+│   ├── /controllers       # Request handlers
+│   └── /routes            # API route definitions
+├── /tests                 # Unit/integration tests
+│   ├── /integration
+│   └── /unit
+├── app.js 
+├── server.js              # Entry point
+└── package.json
+</code></pre>
+<hr>
+<h2>⚙️ Installation</h2>
+<p>Clone the repo and install dependencies:</p>
+<pre class="prettyprint source lang-bash"><code>git clone https://github.com/Jax-Drummond/Project-V---Inventory-System
+cd Project-V---Inventory-System
+npm install
+</code></pre>
+<hr>
+<h2>▶️ Running the Server</h2>
+<h3>Development Mode</h3>
+<pre class="prettyprint source lang-bash"><code>npm run dev
+</code></pre>
+<h3>Production Mode</h3>
+<pre class="prettyprint source lang-bash"><code>npm start
+</code></pre>
+<h3>Testing</h3>
+<pre class="prettyprint source lang-bash"><code>npm test
+</code></pre>
+<hr>
+<h2>🧩 API Endpoints</h2>
+<h3>📦 Products (<code>/api/products</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Get all products</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/search?name=&lt;partial&gt;</code></td>
+<td>Search products by partial name</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Get a product by ID</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3>⚙️ Equipment (<code>/api/equipment</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Get all equipment</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/search?name=&lt;partial&gt;</code></td>
+<td>Search equipment by partial name</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Get equipment by ID</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/:id</code></td>
+<td>Update the Availability</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3>🏗️ Stock (<code>/api/stock</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Get all stock records</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Get stock by ID</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/</code></td>
+<td>Create new stock entry</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/:id</code></td>
+<td>Update stock (quantity, threshold, price)</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/:id</code></td>
+<td>Delete stock record</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3>🧾 Orders (<code>/api/orders</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/</code></td>
+<td>Get all orders</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/:id</code></td>
+<td>Get order by ID</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/</code></td>
+<td>Create a new order</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/:id/status</code></td>
+<td>Update order status</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/:id</code></td>
+<td>Delete order</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>📫 Example Requests</h2>
+<p><strong>Get all products</strong></p>
+<pre class="prettyprint source lang-bash"><code>GET /api/products
+</code></pre>
+<p><strong>Search for a product</strong></p>
+<pre class="prettyprint source lang-bash"><code>GET /api/products/search?name=vacuum
+</code></pre></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-DashboardController.html">DashboardController</a></li><li><a href="module-EquipmentController.html">EquipmentController</a></li><li><a href="module-InventoryService.html">InventoryService</a></li><li><a href="module-OrderController.html">OrderController</a></li><li><a href="module-ProductController.html">ProductController</a></li><li><a href="module-StockController.html">StockController</a></li><li><a href="module-app.html">app</a></li><li><a href="module-routes_dashboard.html">routes/dashboard</a></li><li><a href="module-routes_equipment.html">routes/equipment</a></li><li><a href="module-routes_orders.html">routes/orders</a></li><li><a href="module-routes_product.html">routes/product</a></li><li><a href="module-routes_stock.html">routes/stock</a></li><li><a href="module-server.html">server</a></li></ul><h3>Classes</h3><ul><li><a href="module-DashboardController-DashboardController.html">DashboardController</a></li><li><a href="module-EquipmentController-EquipmentController.html">EquipmentController</a></li><li><a href="module-InventoryService-InventoryService.html">InventoryService</a></li><li><a href="module-OrderController-OrderController.html">OrderController</a></li><li><a href="module-ProductController-ProductController.html">ProductController</a></li><li><a href="module-StockController-StockController.html">StockController</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 03 2025 19:40:33 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

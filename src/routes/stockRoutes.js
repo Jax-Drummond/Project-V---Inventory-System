@@ -1,20 +1,66 @@
+/**
+ * @file stockRoutes.js
+ * @description All the routes for the stock.
+ * @author Owen
+ * @version 1.0.0
+ * @date 2025-10-19
+ * @module routes/stock
+ */
+
 import express from "express";
 import StockController from "../controllers/stockController.js";
 
 const router = express.Router();
 
-// READ
+/**
+ * Retrieves a list of all current stock items.
+ * @name Get All Stock
+ * @route {GET} /api/stock
+ * @summary Get all stock inventory.
+ * @returns {Array<Object>} 200 - An array of stock objects.
+ */
 router.get("/", StockController.getAllStock);
-router.get("/:id", StockController.getStockByID);
-router.get("/product/:id", StockController.getStockByProductID);
 
-// CREATE
+/**
+ * Retrieves a single stock item by its unique ID.
+ * @name Get Stock by ID
+ * @route {GET} /api/stock/:id
+ * @summary Get stock item details.
+ * @param {string} id.path.required - The unique ID of the stock entry.
+ * @returns {Object} 200 - A single stock object.
+ */
+router.get("/:id", StockController.getStockByID);
+
+
+/**
+ * Creates a new stock entry in the inventory.
+ * @name Create Stock
+ * @route {POST} /api/stock
+ * @summary Create new stock.
+ * @param {Object} request.body.required - The stock information (productId, quantity, etc.).
+ * @returns {Object} 201 - The created stock object.
+ */
 router.post("/", StockController.createStock);
 
-// UPDATE (qty, threshold, price)
+/**
+ * Updates an existing stock entry (Quantity, Threshold, Price).
+ * @name Update Stock
+ * @route {PUT} /api/stock/:id
+ * @summary Update stock details.
+ * @param {string} id.path.required - The unique ID of the stock entry to update.
+ * @param {Object} request.body.required - Fields to update (qty, threshold, price).
+ * @returns {Object} 200 - The updated stock object.
+ */
 router.put("/:id", StockController.updateStock);
 
-// DELETE
+/**
+ * Deletes a stock entry from the system.
+ * @name Delete Stock
+ * @route {DELETE} /api/stock/:id
+ * @summary Remove stock entry.
+ * @param {string} id.path.required - The unique ID of the stock entry.
+ * @returns {Object} 200 - Success message.
+ */
 router.delete("/:id", StockController.deleteStock);
 
 export default router;

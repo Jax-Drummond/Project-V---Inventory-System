@@ -1,8 +1,16 @@
+/**
+ * @file server.js
+ * @description Acts as the entry point of the server.
+ * @author Jax
+ * @version 1.0.0
+ * @date 2025-9-24
+ * @module server
+ */
+
 import app from "./app.js"
 
 const PORT = 7198
 
-// Start Server
 app.listen(PORT, "0.0.0.0", () =>
 {
     console.log(`Server is now running on port ${PORT}`)

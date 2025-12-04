@@ -1,0 +1,28 @@
+{
+    "source": {
+        "include": [
+            "./src", 
+            "./app.js", 
+            "./server.js",
+            "./README.md" 
+        ],
+        "exclude": [
+            "./node_modules", 
+            "./tests"
+        ],
+        "includePattern": ".+\\.js(doc|x)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "opts": {
+        "recurse": true,
+        "destination": "./docs",
+        "readme": "./README.md"
+    },
+    "plugins": [
+        "plugins/markdown"
+    ],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false
+    }
+}

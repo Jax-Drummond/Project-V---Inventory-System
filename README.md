@@ -30,18 +30,17 @@ A modular **Node.js + Express** backend providing RESTful APIs for managing inve
 ```bash
 inventory-system/
 ├── /public
-│   ├── /images            # Image assets
 │   ├── /scripts           # Client-side JS
 │   ├── /styles            # CSS stylesheets
-│   ├── index.html         # Root page
+│   └── index.html         # Root page
 ├── /src
-│   ├── /config            # DB config, environment setup
+│   ├── /service            # DB config, environment setup
 │   ├── /controllers       # Request handlers
-│   ├── /models            # Data models (schemas)
-│   ├── /routes            # API route definitions
-│   ├── /middleware        # Express middleware
-│   └── /utils             # Helper functions
+│   └── /routes            # API route definitions
 ├── /tests                 # Unit/integration tests
+│   ├── /integration
+│   └── /unit
+├── app.js 
 ├── server.js              # Entry point
 └── package.json
 ```

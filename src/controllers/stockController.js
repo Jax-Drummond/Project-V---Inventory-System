@@ -1,6 +1,24 @@
+/**
+ * @file stockController.js
+ * @description All the routes functionality for the stock.
+ * @author Owen, Jax
+ * @version 1.1.2
+ * @date 2025-10-19
+ * @module StockController
+ */
+
 import InventoryService from "../services/inventoryService.js";
 
+/**
+ * Controls all of the functionality for the stock endpoints.
+ * @class
+ */
 class StockController {
+    /**
+     * Gets all the stock.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     */
     static async getAllStock(req, res) {
         try {
             const stock = await InventoryService.getAllStock();
@@ -10,6 +28,12 @@ class StockController {
         }
     }
 
+    /**
+     * Gets stock by id.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async getStockByID(req, res) {
         try {
             const stock = await InventoryService.getStockById(req.params.id);
@@ -22,18 +46,13 @@ class StockController {
         }
     }
 
-    static async getStockByProductID(req, res) {
-        try {
-            const stock = await InventoryService.getStockByProductId(req.params.id);
-            if (!stock) {
-                return res.status(404).json({ message: "Item not found." });
-            }
-            res.status(200).json(stock);
-        } catch (e) {
-            res.status(500).json({ error: e.message });
-        }
-    }
 
+    /**
+     * Creates a new stock.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async createStock(req, res) {
         try {
             const { qty, threshold, price, productId } = req.body;
@@ -59,12 +78,18 @@ class StockController {
         }
     }
 
+    /**
+     * Updates a stock.
+     * @param {object} req The request.
+     * @param {object} res The Response.
+     * @returns A response.
+     */
     static async updateStock(req, res) {
         try {
             const { id } = req.params;
-            const { qty, threshold, price } = req.body;
+            const { qty, threshold } = req.body;
 
-            const updatedStock = await InventoryService.updateStock(id, { qty, threshold, price });
+            const updatedStock = await InventoryService.updateStock(id, { qty, threshold });
 
             if (!updatedStock) {
                 return res.status(404).json({ message: "Stock not found." });
@@ -79,6 +104,12 @@ class StockController {
         }
     }
 
+    /**
+     * Deletes a stock.
+     * @param {object} req The request.
+     * @param {object} res The response.
+     * @returns A response.
+     */
     static async deleteStock(req, res) {
         try {
             const { id } = req.params;

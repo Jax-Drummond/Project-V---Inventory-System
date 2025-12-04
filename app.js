@@ -1,3 +1,12 @@
+/**
+ * @file app.js
+ * @description Loads all routs and starts logging.
+ * @author Jax
+ * @version 1.0.0
+ * @date 2025-10-19
+ * @module app
+ */
+
 import express from "express"
 import volleyball from "volleyball"
 import path from "path"
