@@ -112,13 +112,11 @@ class InventoryService {
      * @returns The response.
      */
     static async createProduct(data) {
-        console.log(data)
         const payload = {
             name: data.name,
             price: data.price,
             description: data.description
         };
-        console.log(payload)
         const response = await this._fetch('inventory/product', {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -188,18 +186,9 @@ class InventoryService {
      */
     static async getStockById(id) {
         const stocks = await this.getAllStock();
-        return stocks.find(s => s.id === parseInt(id)) || null;
-    }
-
-    /**
-     * Gets a stock by it's product ID.
-     * @param {number} id The id of the product.
-     * @returns The stock.
-     */
-    static async getStockByProductId(id) {
-        const stocks = await this.getAllStock();
         return stocks.find(s => s.productId === parseInt(id)) || null;
     }
+
 
     /**
      * Using the data given, creates a new stock.
@@ -230,16 +219,15 @@ class InventoryService {
      * @returns The new updated stock.
      */
     static async updateStock(id, data) {
-        const stock = await this.getStockById(id)
 
         const payload = {
-            productid: stock.productId,
+            productid: id,
             qty: data.qty,
             restock: data.threshold
         };
 
         // We send the productId because database is using productId in query.
-        await this._fetch(`inventory/product-stock/${stock.productId}`, {
+        await this._fetch(`inventory/product-stock/${id}`, {
             method: 'PATCH',
             body: JSON.stringify(payload)
         });
@@ -248,18 +236,17 @@ class InventoryService {
 
             const allOrders = await this.getAllOrders();
             const hasPendingOrder = allOrders.some(o =>
-                o.productId === stock.productId &amp;&amp; o.status.toLowerCase() !== 'received'
+                o.productid === id &amp;&amp; o.status.toLowerCase() !== 'received'
             );
-
             if (!hasPendingOrder)
             {
-                console.log(`[Auto-Restock] Stock for Product ID ${stock.productId} is low (${data.qty} &lt;= ${data.threshold}). Creating order...`);
+                console.log(`[Auto-Restock] Stock for Product ID ${id} is low (${data.qty} &lt;= ${data.threshold}). Creating order...`);
 
                 // Calculate a reorder amount
                 const reorderQty = data.threshold > 0 ? data.threshold * 2 : 20;
 
                 await this.createOrder({
-                    productId: stock.productId,
+                    productId: id,
                     qty: reorderQty,
                     status: 'Pending' // Maps to suppliername in createOrder
                 });
@@ -331,7 +318,6 @@ class InventoryService {
      * @returns The response.
      */
     static async createOrder(data) {
-        console.log(data)
         const payload = {
             productid: data.productId,
             qty: data.qty,
@@ -360,14 +346,14 @@ class InventoryService {
             const order = await this.getOrderById(id);
             // Ensure order exists and wasn't already received to avoid double counting
             if (order &amp;&amp; order.status.toLowerCase() !== 'received') {
-                const stock = await this.getStockById(order.stockId);
+                const stock = await this.getStockById(order.productId);
 
                 if (stock) {
                     const newQty = parseInt(stock.qty) + parseInt(order.qty);
                     console.log(`[Auto-Update] Receiving Order ${id}. Updating Stock for Product ${order.productId}: ${stock.qty} -> ${newQty}`);
 
                     // Call updateStock (Note: current implementation expects ProductID as first arg)
-                    await this.updateStock(order.stockId, {
+                    await this.updateStock(order.productId, {
                         productId: order.productId,
                         qty: newQty,
                         threshold: stock.threshold
@@ -409,7 +395,8 @@ class InventoryService {
             id: e.EquipmentCode,
             name: e.EquipmentName,
             status: e.EquipmentAvailability,
-            type: e.EquipmentType
+            type: e.EquipmentType,
+            tempid: e.EquipmentID
         }));
     }
 
@@ -420,7 +407,7 @@ class InventoryService {
      */
     static async getEquipmentById(id) {
         const equipment = await this.getAllEquipment();
-        return equipment.find(e => e.id === parseInt(id)) || null;
+        return equipment.find(e => e.id === id) || null;
     }
 
     /**
@@ -442,12 +429,15 @@ class InventoryService {
      */
     static async updateEquipmentStatus(id, data)
     {
-        await this._fetch(`fleet/equipment/${id}`, {
+        const equipment = await this.getEquipmentById(id)
+
+        await this._fetch(`fleet/equipment/${equipment.tempid}`, {
             method: 'PATCH',
             body: JSON.stringify({
                 availability: data.status,
             })
         });
+
         return this.getEquipmentById(id);
     }
 
@@ -540,7 +530,7 @@ export default InventoryService;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 03 2025 17:55:19 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Dec 03 2025 19:40:33 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
