@@ -16,25 +16,21 @@ describe("Order Routes", () => {
         it("should return all orders with status 200", async () => {
             const mockOrders = [
                 {
-                    id: 1,
+                    productId: 2,
                     qty: 2,
                     cost: 50,
                     status: "pending",
                     date: "2024-01-01",
                     receivedDate: null,
-                    stockId: 1,
-                    productId: 1,
                     Product: { id: 1, name: "Product A", price: 25 },
                 },
                 {
-                    id: 2,
+                    productId: 2,
                     qty: 1,
                     cost: 30,
                     status: "completed",
                     date: "2024-01-02",
                     receivedDate: "2024-01-05",
-                    stockId: 2,
-                    productId: 2,
                     Product: { id: 2, name: "Product B", price: 30 },
                 },
             ];
@@ -66,13 +62,11 @@ describe("Order Routes", () => {
     describe("GET /api/orders/:id", () => {
         it("should return the order with the given ID and status 200", async () => {
             const mockOrder = {
-                id: 1,
                 qty: 2,
                 cost: 50,
                 status: "pending",
                 date: "2024-01-01",
                 receivedDate: null,
-                stockId: 1,
                 productId: 1,
                 Product: { id: 1, name: "Product A", price: 25 },
             };
@@ -111,27 +105,23 @@ describe("Order Routes", () => {
     describe("POST /api/orders", () => {
         it("should create a new order and return it with status 201", async () => {
             const requestBody = {
+                productId: 1,
                 qty: 2,
-                cost: 50,
-                status: "pending",
-                stockId: 1
+                status: "pending"
             };
             const mockStock = {
-                id: 1,
+                productId: 1,
                 qty: 10,
                 threshold: 5,
-                price: 25,
-                productId: 1,
+  
             }
 
             const mockCreatedOrder = {
                 id: 1,
                 qty: 2,
-                cost: 50,
                 status: "pending",
                 date: "2024-01-01",
                 receivedDate: null,
-                stockId: 1,
                 productId: 1,
             };
 
@@ -143,9 +133,8 @@ describe("Order Routes", () => {
             expect(InventoryService.getStockById).toHaveBeenCalledWith(1);
             expect(InventoryService.createOrder).toHaveBeenCalledWith({
                 qty: 2,
-                cost: 50,
                 status: "pending",
-                stockId: 1,
+                productId: 1,
             });
             expect(res.statusCode).toBe(201);
             // Controller returns newOrder directly
@@ -153,10 +142,9 @@ describe("Order Routes", () => {
         });
         it("should return 404 if stock not found", async () => {
     const requestBody = {
-      qty: 2,
-      cost: 50,
-      status: "pending",
-      stockId: 999,
+        productId: 999,
+        qty: 2,
+        status: "pending",
     };
 
     jest
@@ -174,18 +162,16 @@ describe("Order Routes", () => {
 
   it("should handle errors and return status 500", async () => {
     const requestBody = {
-      qty: 2,
-      cost: 50,
-      status: "pending",
-      stockId: 1,
+        productId: 1,
+        qty: 2,
+        status: "pending",
+      
     };
 
     const mockStock = {
-      id: 1,
-      qty: 10,
-      threshold: 5,
-      price: 25,
-      productId: 1,
+        productId: 1,
+        qty: 10,
+        threshold: 5,  
     };
 
     const error = new Error("Database error");
@@ -205,9 +191,8 @@ describe("Order Routes", () => {
     expect(InventoryService.getStockById).toHaveBeenCalledWith(1);
     expect(InventoryService.createOrder).toHaveBeenCalledWith({
       qty: 2,
-      cost: 50,
       status: "pending",
-      stockId: 1,
+      productId: 1,
     });
     expect(res.statusCode).toBe(500);
     expect(res.body).toEqual({ error: error.message });
@@ -227,7 +212,6 @@ describe("Order Routes", () => {
                 status: "completed",
                 date: "2024-01-01",
                 receivedDate: "2024-01-05",
-                stockId: 1,
                 productId: 1,
             };
 

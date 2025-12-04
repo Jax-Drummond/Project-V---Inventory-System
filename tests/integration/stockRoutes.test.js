@@ -169,14 +169,11 @@ describe("Stock Routes", () => {
         const requestBody = {
             qty: 80,
             threshold: 15,
-            price: 12.00,
         };
         const mockStockItem = {
-            id: 1,
+            productId: 1,
             qty: 80,
             threshold: 15,
-            price: 12.00,
-            productId: 1
         };
 
         jest
@@ -197,7 +194,6 @@ describe("Stock Routes", () => {
         const requestBody = {
             qty: 80,
             threshold: 15,
-            price: 12.00,
         };
 
         jest
@@ -218,7 +214,6 @@ describe("Stock Routes", () => {
         const requestBody = {
             qty: 80,
             threshold: 15,
-            price: 12.00,
         };
 
         jest
