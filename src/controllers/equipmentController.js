@@ -84,10 +84,10 @@ class EquipmentController {
             const { id } = req.params;
             const { status } = req.body;
 
-            const updatedEquipmentStatus = await InventoryService.updateEquipmentStatus(id, { status });
 
+            const updatedEquipmentStatus = await InventoryService.updateEquipmentStatus(id, { status });
             if (!updatedEquipmentStatus) {
-                return res.status(404).json({ message: "Stock not found." });
+                return res.status(404).json({ message: "Equipment not found." });
             }
 
             res.status(200).json({

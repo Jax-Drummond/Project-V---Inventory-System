@@ -60,7 +60,7 @@ class OrderController {
             if (!stock) {
                 return res.status(404).json({ message: "Stock not found" });
             }
-            
+
             const newOrder = await InventoryService.createOrder({ productId: stock.productId, qty, status });
 
             res.status(201).json(newOrder);

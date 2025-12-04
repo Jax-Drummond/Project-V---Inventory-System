@@ -46,23 +46,6 @@ class StockController {
         }
     }
 
-    /**
-     * Gets stock by product ID.
-     * @param {object} req The request.
-     * @param {object} res The response.
-     * @returns A response.
-     */
-    static async getStockByProductID(req, res) {
-        try {
-            const stock = await InventoryService.getStockByProductId(req.params.id);
-            if (!stock) {
-                return res.status(404).json({ message: "Item not found." });
-            }
-            res.status(200).json(stock);
-        } catch (e) {
-            res.status(500).json({ error: e.message });
-        }
-    }
 
     /**
      * Creates a new stock.
@@ -104,9 +87,9 @@ class StockController {
     static async updateStock(req, res) {
         try {
             const { id } = req.params;
-            const { qty, threshold, price } = req.body;
+            const { qty, threshold } = req.body;
 
-            const updatedStock = await InventoryService.updateStock(id, { qty, threshold, price });
+            const updatedStock = await InventoryService.updateStock(id, { qty, threshold });
 
             if (!updatedStock) {
                 return res.status(404).json({ message: "Stock not found." });

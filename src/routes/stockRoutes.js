@@ -31,15 +31,6 @@ router.get("/", StockController.getAllStock);
  */
 router.get("/:id", StockController.getStockByID);
 
-/**
- * Retrieves the stock entry associated with a specific Product ID.
- * @name Get Stock by Product ID
- * @route {GET} /api/stock/product/:id
- * @summary Find stock for a specific product.
- * @param {string} id.path.required - The unique Product ID.
- * @returns {Object} 200 - The stock object for that product.
- */
-router.get("/product/:id", StockController.getStockByProductID);
 
 /**
  * Creates a new stock entry in the inventory.

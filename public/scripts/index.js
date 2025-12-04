@@ -20,7 +20,6 @@ class ApiClient {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        console.log(res)
         if (!res.ok) throw new Error(`Creation Failed: ${res.statusText}`);
         return await res.json();
     }
@@ -68,7 +67,7 @@ const RESOURCE_CONFIG = {
     stock: {
         label: 'Stock',
         columns: [
-            { key: 'id', label: 'ID', type: 'text', editable: false },
+            { key: 'productId', label: 'ID', type: 'text', editable: false },
             { key: 'Product.name', label: 'Product Name', type: 'text', editable: false },
             { key: 'qty', label: 'Qty', type: 'number', editable: true },
             { key: 'threshold', label: 'Threshold', type: 'number', editable: true },
@@ -79,7 +78,7 @@ const RESOURCE_CONFIG = {
         label: 'Orders',
         columns: [
             { key: 'id', label: 'Order ID', type: 'text', editable: false },
-            { key: 'stockId', label: 'Stock ID', type: 'text', editable: false, isNewField: true }, // Not editable, but needed for creation
+            { key: 'productId', label: 'Stock ID', type: 'text', editable: false, isNewField: true }, // Not editable, but needed for creation
             { key: 'date', label: 'Ordered Date', type: 'date', editable: false },
             { key: 'status', label: 'Status', type: 'status', editable: true, isNewField: true }, // Editable, and needed for creation
             { key: 'cost', label: 'Total Cost', type: 'currency', editable: false },
@@ -267,7 +266,7 @@ class InventoryApp {
 
                     // Status Badges
                     if (col.type === 'status') {
-                        const color = String(val).toLowerCase().includes('available') ? 'bg-green-900 text-green-300'
+                        const color = String(val).toLowerCase() == 'available' ? 'bg-green-900 text-green-300'
                                     : String(val).toLowerCase().includes('stock') ? 'bg-yellow-900 text-yellow-300'
                                     : String(val).toLowerCase().includes('received') ? 'bg-green-900 text-green-300'
                                     : 'bg-red-900 text-red-300';
@@ -277,12 +276,12 @@ class InventoryApp {
                     return `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${val}</td>`;
                 }).join('')}
 
-                ${this.currentType != "products" && this.currentType != "equipment" ? 
+                ${this.currentType != "products"  ? 
     `<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        <button onclick="app.openEditModal(${item.id})" class="text-green-400 hover:text-green-300 mr-3">Edit</button>
+        <button onclick="app.openEditModal('${!item.id ? item.productId : item.id}')" class="text-green-400 hover:text-green-300 mr-3">Edit</button>
         
         ${this.currentType  == "stock" ? 
-            `<button onclick="app.deleteEntry(${item.id})" class="text-red-400 hover:text-red-300">Delete</button>` 
+            `<button onclick="app.deleteEntry(${!item.id ? item.productId : item.id})" class="text-red-400 hover:text-red-300">Delete</button>` 
             : '' 
         }
             </td>` 
@@ -317,8 +316,16 @@ class InventoryApp {
      */
     openEditModal(id) {
         this.isCreating = false; // Set mode to edit
-        const item = this.currentData.find(d => d.id === id);
-        if (!item) return;
+        if(!isNaN(id))
+        {
+            id = parseInt(id)
+        }
+        let item = this.currentData.find(d => d.id === id);
+        if (!item)
+        {
+            item = this.currentData.find(d => d.productId == id)
+            if(!item) return;
+        }
 
         const config = RESOURCE_CONFIG[this.currentType];
         this.els.editId.value = id;
@@ -370,7 +377,7 @@ class InventoryApp {
             if (this.currentType === 'orders') {
                 options = ['Pending', 'Shipped', 'Received'];
             } else if (this.currentType === 'equipment') {
-                options = ['Available', 'In Use', 'Damaged'];
+                options = ['Available', 'UnderMaintenance', 'OutForRental','Damaged', "Unavailable"];
             } else {
                 // Fallback (only relevant for editing, not creation where status is defined)
                 options = [val];
@@ -438,7 +445,7 @@ class InventoryApp {
 
                 } else if (this.currentType === 'orders') {
                     const payload = {
-                        stockId: data.stockId, // Mapped to productId in inventoryService.js
+                        productId: data.stockId, // Mapped to productId in inventoryService.js
                         qty: parseInt(data.qty),
                         status: data.status // Mapped to suppliername in inventoryService.js
                     };
